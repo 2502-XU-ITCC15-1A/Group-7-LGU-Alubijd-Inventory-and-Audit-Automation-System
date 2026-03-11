@@ -1,0 +1,11 @@
+/* Main Styles */
+
+body {
+    background-color: #e0f7fa;
+    font-family: sans-serif;
+    text-align: center;
+    margin-top: 50px;
+}
+.success {
+    color: green;
+}
