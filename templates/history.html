@@ -1,1 +1,6 @@
-
+{% for record in history_records SAMPLE LANGS %}
+<tr>
+    <td>{{ record.category }}</td>
+    <td>{{ record.name }}</td>
+    </tr>
+{% endfor %}
