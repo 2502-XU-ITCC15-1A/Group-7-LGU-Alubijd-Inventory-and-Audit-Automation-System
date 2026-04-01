@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ category_name }} Audit - ALIAS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e8ecf8;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 220px;
+            min-width: 220px;
+            background: #ffffff;
+            border-right: 1px solid #eaeaea;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            padding: 24px 0 20px;
+        }
+
+        .sidebar-logo {
+            padding: 0 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 1.5px solid #d0d7f0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+        .sidebar-logo-text .logo-name {
+            font-size: 18px;
+            font-weight: 900;
+            color: #31449b;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .sidebar-logo-text .logo-sub {
+            font-size: 9.5px;
+            color: #9aa5c0;
+            line-height: 1.3;
+            margin-top: 2px;
+        }
+
+        .sidebar-menu-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #31449b;
+            padding: 0 20px;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-nav { flex: 1; }
+
+        .sidebar-nav ul { list-style: none; }
+
+        .sidebar-nav li a {
+            display: block;
+            padding: 11px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #31449b;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .sidebar-nav li a:hover { background: #f0f2fa; }
+        .sidebar-nav li.active a { background: #e4e7f5; font-weight: 700; }
+
+        .sidebar-footer {
+            padding: 16px 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1.5px solid #eaeaea;
+            border-radius: 12px;
+            padding: 10px 14px;
+        }
+
+        .profile-icon {
+            width: 36px;
+            height: 36px;
+            background: #31449b;
+            color: #ffffff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .profile-info { display: flex; flex-direction: column; }
+
+        .profile-info strong { font-size: 13px; color: #31449b; font-weight: 700; }
+
+        .profile-btn {
+            background: transparent;
+            border: 1px solid #31449b;
+            color: #31449b;
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border-radius: 4px;
+            padding: 3px 7px;
+            margin-top: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .profile-btn:hover { background: #31449b; color: #fff; }
+
+        .logout-btn {
+            background: #31449b;
+            color: #ffffff;
+            border: none;
+            border-radius: 30px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .logout-btn:hover { background: #253580; }
+
+        .page-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .audit-header {
+            background: linear-gradient(135deg, #5269be 0%, #8fa0d8 50%, #c8d0ee 100%);
+            padding: 36px 50px 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .audit-header-left h1 {
+            font-size: 90px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 3px;
+            line-height: 1;
+            text-shadow: 2px 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .audit-header-left h2 {
+            font-size: 22px;
+            font-weight: 600;
+            font-style: italic;
+            color: #31449b;
+            margin-top: 8px;
+        }
+
+        .audit-header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .alias-text-block { text-align: right; }
+
+        .alias-text-block .alias-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: rgba(255,255,255,0.85);
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
+        .alias-text-block .alias-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.4;
+            margin-top: 3px;
+        }
+
+        .alias-logo-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.6);
+            flex-shrink: 0;
+        }
+
+        .alias-logo-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+        .audit-body { padding: 36px 40px 60px; }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            transition: all 0.2s ease;
+            background: #31449b;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(49,68,155,0.25);
+        }
+
+        .btn-action:hover {
+            background: #253580;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(49,68,155,0.35);
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border-left: 4px solid #388e3c;
+            color: #2e7d32;
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(49,68,155,0.08);
+            overflow: visible;
+        }
+
+        .table-inner { width: 100%; overflow: hidden; border-radius: 16px; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr { border-bottom: 1px solid #e8ecf8; }
+
+        thead th {
+            padding: 18px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #9aa5c0;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            text-align: center;
+        }
+
+        thead th:first-child { text-align: left; padding-left: 24px; }
+        thead th:last-child  { text-align: right; padding-right: 20px; }
+
+        tbody tr { border-bottom: 1px solid #f0f2fa; transition: background 0.15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #f7f9ff; }
+
+        tbody td {
+            padding: 18px 16px;
+            font-size: 14px;
+            color: #31449b;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody td:first-child { text-align: left; padding-left: 24px; font-weight: 600; }
+
+        .audit-input {
+            width: 90px;
+            padding: 7px 10px;
+            border: 1.5px solid #d0d7f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            color: #31449b;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .audit-input:focus { border-color: #5269be; }
+
+        .remarks-input {
+            width: 140px;
+            padding: 7px 10px;
+            border: 1.5px solid #d0d7f0;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            color: #31449b;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .remarks-input:focus { border-color: #5269be; }
+
+        .variance-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .variance-neutral { background: #f0f2fa; color: #9aa5c0; }
+        .variance-good    { background: #e8f5e9; color: #388e3c; }
+        .variance-bad     { background: #fdecea; color: #d32f2f; }
+
+        .row-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            padding-right: 12px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9aa5c0;
+            font-size: 18px;
+            padding: 4px 7px;
+            border-radius: 6px;
+            transition: all 0.15s;
+            line-height: 1;
+        }
+
+        .icon-btn:hover { color: #31449b; background: #f0f2fa; }
+
+        .row-menu { position: static; display: inline-block; }
+
+        .dropdown-menu {
+            display: none;
+            position: fixed;
+            background: #ffffff;
+            border: 1px solid #e0e4f0;
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(49,68,155,0.18);
+            min-width: 150px;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .dropdown-menu.open { display: block; }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 11px 18px;
+            font-size: 13px;
+            color: #31449b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+
+        .dropdown-menu a:hover { background: #f0f2fa; }
+        .dropdown-menu a.danger { color: #d32f2f; }
+        .dropdown-menu a.danger:hover { background: #fdecea; }
+
+        .expand-row { display: none; }
+
+        .expand-row td {
+            background: #f7f9ff;
+            padding: 14px 24px;
+            text-align: left;
+            font-size: 13px;
+            color: #5269be;
+        }
+
+        .expand-row.open { display: table-row; }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #9aa5c0;
+            font-size: 15px;
+        }
+
+        .empty-state span { font-size: 36px; display: block; margin-bottom: 10px; }
+
+        .submit-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-submit {
+            background: #31449b;
+            color: #ffffff;
+            padding: 13px 36px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(49,68,155,0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #253580;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(49,68,155,0.35);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(49,68,155,0.18);
+            backdrop-filter: blur(2px);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px 44px 36px;
+            width: 100%;
+            max-width: 540px;
+            box-shadow: 0 20px 60px rgba(49,68,155,0.18);
+        }
+
+        .modal-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 800;
+            color: #31449b;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+        }
+
+        .modal-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 13px 18px;
+            border: 1.5px solid #c8d0ee;
+            border-radius: 30px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            color: #31449b;
+            background: #ffffff;
+            outline: none;
+            text-align: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-input::placeholder { color: #aab2cc; font-weight: 500; }
+
+        .modal-input:focus {
+            border-color: #5269be;
+            box-shadow: 0 0 0 3px rgba(82,105,190,0.12);
+        }
+
+        .modal-error {
+            font-size: 11px;
+            color: #d32f2f;
+            text-align: center;
+            margin-bottom: 14px;
+            min-height: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .modal-btn {
+            padding: 13px 52px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            cursor: pointer;
+            background: #31449b;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(49,68,155,0.25);
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn:hover {
+            background: #253580;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(49,68,155,0.35);
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+                <img src="https://res.cloudinary.com/dvblizd3z/image/upload/v1773499758/Alubijid%20Local%20Inventory%20and%20Audit%20System%20%28ALIAS%29/Menu_Header_qscnq2.png"
+                     alt="ALIAS"
+                     onerror="this.parentElement.style.background='#31449b'; this.style.display='none';">
+            </div>
+            <div class="sidebar-logo-text">
+                <div class="logo-name">ALIAS</div>
+                <div class="logo-sub">Alubijid Local Inventory<br>and Audit System</div>
+            </div>
+        </div>
+
+        <p class="sidebar-menu-label">Menu</p>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/inventory">Inventory</a></li>
+                <li class="active"><a href="/audit">Audit</a></li>
+                <li><a href="/history">History</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="profile-card">
+                <div class="profile-icon">A</div>
+                <div class="profile-info">
+                    <strong>ADMIN</strong>
+                    <button class="profile-btn">View Profile &gt;</button>
+                </div>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </div>
+    </aside>
+
+    <div class="page-content">
+
+        {% set display_names = {
+            'Fuel Consumption':   'FUEL',
+            'Transport Vehicle':  'TRANSPORT',
+            'Medicines':          'MEDICAL',
+            'Emergency Supplies': 'EMERGENCY',
+            'Veterinary Supplies':'VETERINARY'
+        } %}
+        {% set display_title = display_names[category_name] if category_name in display_names else category_name | upper %}
+
+        <header class="audit-header">
+            <div class="audit-header-left">
+                <h1>{{ display_title }}</h1>
+                <h2>Welcome, SLP GROUP!!</h2>
+            </div>
+            <div class="audit-header-right">
+                <div class="alias-text-block">
+                    <div class="alias-title">ALIAS</div>
+                    <div class="alias-sub">Alubijid Local Inventory<br>and Audit System</div>
+                </div>
+                <div class="alias-logo-circle">
+                    <img src="https://res.cloudinary.com/dvblizd3z/image/upload/v1773499758/Alubijid%20Local%20Inventory%20and%20Audit%20System%20%28ALIAS%29/Menu_Header_qscnq2.png"
+                         alt="ALIAS Logo"
+                         onerror="this.parentElement.style.display='none';">
+                </div>
+            </div>
+        </header>
+
+        <div class="modal-overlay" id="createModal">
+            <div class="modal-box">
+                <div class="modal-title">Create New Item</div>
+                <div class="modal-fields">
+                    <input type="text"   id="mi-id"   class="modal-input" placeholder="Item ID">
+                    <input type="text"   id="mi-name" class="modal-input" placeholder="Item Name">
+                    <input type="number" id="mi-qty"  class="modal-input" placeholder="System Qty">
+                    <input type="text"   id="mi-dept" class="modal-input" placeholder="Dept/Office">
+                    <input type="date"   id="mi-date" class="modal-input" placeholder="Date" style="grid-column: 1 / -1;">
+                </div>
+                <div class="modal-error" id="modalError"></div>
+                <div class="modal-actions">
+                    <button class="modal-btn" id="modalBackBtn">Back</button>
+                    <button class="modal-btn" id="modalCreateBtn">Create</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="audit-body">
+
+            {% if success %}
+            <div class="alert-success">
+                ✓ &nbsp; Audit data for <strong>{{ category_name }}</strong> has been submitted successfully.
+            </div>
+            {% endif %}
+
+            <div class="action-bar">
+                <button class="btn-action" id="openModalBtn">+ &nbsp; Create New Item</button>
+                <a href="{{ url_for('audit_categories') }}" class="btn-action">Back to Homepage</a>
+            </div>
+
+            <form action="{{ url_for('audit_form', category_name=category_name) }}" method="POST" id="auditForm">
+                <div class="table-wrapper">
+                    <div class="table-inner">
+                        <table id="auditTable">
+                            <thead>
+                                <tr>
+                                    <th>Item ID</th>
+                                    <th>Item Name</th>
+                                    <th>System Qty</th>
+                                    <th>Physical Count</th>
+                                    <th>Variance</th>
+                                    <th>Remarks</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTbody">
+                                {% for item in items %}
+                                <tr class="audit-data-row">
+                                    <td><strong>{{ item.id }}</strong></td>
+                                    <td>{{ item.name }}</td>
+                                    <td class="system-qty" data-qty="{{ item.system_qty }}">{{ item.system_qty }}</td>
+                                    <td>
+                                        <input type="number"
+                                               name="physical_{{ item.id }}"
+                                               class="audit-input"
+                                               oninput="calculateVariance(this)"
+                                               placeholder="0"
+                                               required>
+                                    </td>
+                                    <td><span class="variance-badge variance-neutral">Pending</span></td>
+                                    <td>
+                                        <input type="text"
+                                               name="remarks_{{ item.id }}"
+                                               class="remarks-input"
+                                               placeholder="Add remark…">
+                                    </td>
+                                    <td>
+                                        <div class="row-actions">
+                                            <button type="button" class="icon-btn expand-btn" title="Expand">&#8964;</button>
+                                            <div class="row-menu">
+                                                <button type="button" class="icon-btn menu-btn" title="Options">&#8942;</button>
+                                                <div class="dropdown-menu">
+                                                    <a href="#" class="edit-btn">Edit Item</a>
+                                                    <a href="#" class="danger delete-btn">Delete Item</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="expand-row">
+                                    <td colspan="7">
+                                        <strong>Category:</strong> {{ item.category }} &nbsp;|&nbsp;
+                                        <strong>ID:</strong> {{ item.id }} &nbsp;|&nbsp;
+                                        <strong>System Qty:</strong> {{ item.system_qty }}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr id="emptyRow">
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <span>📋</span>
+                                            No items found for <strong>{{ category_name }}</strong>.
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="submit-row">
+                    <button type="submit" class="btn-submit">Submit {{ category_name }} Report</button>
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+
+    <script>
+        function calculateVariance(inputEl) {
+            const row    = inputEl.closest('tr');
+            const sysEl  = row.querySelector('.system-qty');
+            const badge  = row.querySelector('.variance-badge');
+            const remark = row.querySelector('.remarks-input');
+            if (!sysEl || !badge) return;
+            const sysQty  = parseInt(sysEl.getAttribute('data-qty'), 10);
+            const physQty = parseInt(inputEl.value, 10);
+            if (isNaN(physQty)) {
+                badge.textContent = 'Pending';
+                badge.className   = 'variance-badge variance-neutral';
+                if (remark) remark.required = false;
+                return;
+            }
+            const diff = physQty - sysQty;
+            if (diff === 0) {
+                badge.textContent = 'Matched (0)';
+                badge.className   = 'variance-badge variance-good';
+                if (remark) remark.required = false;
+            } else {
+                badge.textContent = `Discrepancy (${diff > 0 ? '+' : ''}${diff})`;
+                badge.className   = 'variance-badge variance-bad';
+                if (remark) remark.required = true;
+            }
+        }
+
+        function escHtml(str) {
+            return String(str)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function positionDropdown(btn, dropdown) {
+            const rect = btn.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+            setTimeout(() => {
+                const dw = dropdown.offsetWidth;
+                let left = rect.right + window.scrollX - dw;
+                if (left < 8) left = 8;
+                dropdown.style.left = left + 'px';
+            }, 0);
+        }
+
+        function attachRowEvents(tr, expandTr) {
+            const expandBtn = tr.querySelector('.expand-btn');
+            expandBtn.addEventListener('click', () => {
+                expandTr.classList.toggle('open');
+                expandBtn.style.transform = expandTr.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+
+            const menuBtn  = tr.querySelector('.menu-btn');
+            const dropdown = tr.querySelector('.dropdown-menu');
+
+            menuBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                document.querySelectorAll('.dropdown-menu.open').forEach(m => { if (m !== dropdown) m.classList.remove('open'); });
+                dropdown.classList.toggle('open');
+                if (dropdown.classList.contains('open')) positionDropdown(menuBtn, dropdown);
+            });
+
+            tr.querySelector('.delete-btn').addEventListener('click', e => {
+                e.preventDefault();
+                tr.remove();
+                expandTr.remove();
+            });
+
+            tr.querySelector('.edit-btn').addEventListener('click', e => {
+                e.preventDefault();
+                dropdown.classList.remove('open');
+                document.getElementById('mi-id').value   = tr.cells[0].querySelector('strong').textContent;
+                document.getElementById('mi-name').value = tr.cells[1].textContent.trim();
+                document.getElementById('mi-qty').value  = tr.querySelector('.system-qty').dataset.qty;
+                document.getElementById('mi-dept').value = '';
+                document.getElementById('mi-date').value = '';
+                modalCreateBtn.dataset.editRow = 'true';
+                tr.dataset.editing = 'true';
+                modal.classList.add('open');
+                modalError.textContent = '';
+            });
+        }
+
+        function buildRow(id, name, qty, dept, date) {
+            const safeId = id.replace(/[^a-zA-Z0-9\-_]/g, '_');
+            const tr = document.createElement('tr');
+            tr.className = 'audit-data-row';
+            tr.innerHTML = `
+                <td><strong>${escHtml(id)}</strong></td>
+                <td>${escHtml(name)}</td>
+                <td class="system-qty" data-qty="${escHtml(qty)}">${escHtml(qty)}</td>
+                <td><input type="number" name="physical_${escHtml(safeId)}" class="audit-input" oninput="calculateVariance(this)" placeholder="0" required></td>
+                <td><span class="variance-badge variance-neutral">Pending</span></td>
+                <td><input type="text" name="remarks_${escHtml(safeId)}" class="remarks-input" placeholder="Add remark…"></td>
+                <td>
+                    <div class="row-actions">
+                        <button type="button" class="icon-btn expand-btn" title="Expand">&#8964;</button>
+                        <div class="row-menu">
+                            <button type="button" class="icon-btn menu-btn" title="Options">&#8942;</button>
+                            <div class="dropdown-menu">
+                                <a href="#" class="edit-btn">Edit Item</a>
+                                <a href="#" class="danger delete-btn">Delete Item</a>
+                            </div>
+                        </div>
+                    </div>
+                </td>`;
+
+            const expandTr = document.createElement('tr');
+            expandTr.className = 'expand-row';
+            expandTr.innerHTML = `<td colspan="7">
+                <strong>ID:</strong> ${escHtml(id)} &nbsp;|&nbsp;
+                <strong>Dept/Office:</strong> ${escHtml(dept || '—')} &nbsp;|&nbsp;
+                <strong>Date:</strong> ${escHtml(date || '—')}
+            </td>`;
+
+            attachRowEvents(tr, expandTr);
+            return [tr, expandTr];
+        }
+
+        document.querySelectorAll('.audit-data-row').forEach(tr => {
+            attachRowEvents(tr, tr.nextElementSibling);
+        });
+
+        const modal          = document.getElementById('createModal');
+        const openModalBtn   = document.getElementById('openModalBtn');
+        const modalBackBtn   = document.getElementById('modalBackBtn');
+        const modalCreateBtn = document.getElementById('modalCreateBtn');
+        const modalError     = document.getElementById('modalError');
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modalError.textContent = '';
+            delete modalCreateBtn.dataset.editRow;
+            document.querySelectorAll('.audit-data-row[data-editing]').forEach(r => delete r.dataset.editing);
+            ['mi-id','mi-name','mi-qty','mi-dept','mi-date'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        openModalBtn.addEventListener('click', () => { modal.classList.add('open'); modalError.textContent = ''; });
+        modalBackBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+        modalCreateBtn.addEventListener('click', () => {
+            const id   = document.getElementById('mi-id').value.trim();
+            const name = document.getElementById('mi-name').value.trim();
+            const qty  = document.getElementById('mi-qty').value.trim();
+            const dept = document.getElementById('mi-dept').value.trim();
+            const date = document.getElementById('mi-date').value.trim();
+
+            if (!id || !name || !qty) {
+                modalError.textContent = 'Item ID, Item Name, and System Qty are required.';
+                return;
+            }
+
+            if (modalCreateBtn.dataset.editRow === 'true') {
+                const editingRow = document.querySelector('.audit-data-row[data-editing="true"]');
+                if (editingRow) {
+                    editingRow.cells[0].innerHTML = `<strong>${escHtml(id)}</strong>`;
+                    editingRow.cells[1].textContent = name;
+                    const sysQtyCell = editingRow.querySelector('.system-qty');
+                    sysQtyCell.textContent = qty;
+                    sysQtyCell.dataset.qty = qty;
+                    delete editingRow.dataset.editing;
+                }
+            } else {
+                const emptyRow = document.getElementById('emptyRow');
+                if (emptyRow) emptyRow.remove();
+                const tbody = document.getElementById('auditTbody');
+                const [newTr, newExpand] = buildRow(id, name, qty, dept, date);
+                tbody.appendChild(newTr);
+                tbody.appendChild(newExpand);
+            }
+
+            closeModal();
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
+        });
+    </script>
+
+</body>
+</html>
