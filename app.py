@@ -4,15 +4,15 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('index.html') #change the file to its destination file
+    return render_template('index.html')
 
 @app.route('/inventory')
 def inventory():
-    return render_template('index.html') #change the file to its destination file
+    return render_template('index.html')
 
 @app.route('/audit')
 def audit():
-    return render_template('index.html') #change the file to its destination file
+    return render_template('index.html')
 
 @app.route('/history')
 def history():  
