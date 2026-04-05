@@ -23,11 +23,11 @@ AUDIT_CATEGORIES = [
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html') #change the file to its destination file
 
 @app.route('/inventory')
 def inventory():
-    return render_template('index.html')
+    return render_template('index.html') #change the file to its destination file
 
 @app.route('/audit')
 def audit_categories():
