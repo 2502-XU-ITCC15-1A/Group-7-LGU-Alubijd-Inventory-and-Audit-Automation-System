@@ -1,9 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import os, datetime
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response
 from flask_mysqldb import MySQL
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+from functools import wraps
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'secretkey123'
+
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
+
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+
+mysql = MySQL(app)
 
 SYSTEM_INVENTORY = [
     {"id": "FC-001",  "category": "Fuel Consumption",   "name": "Diesel (Liters)",            "system_qty": 500},
@@ -21,14 +35,14 @@ AUDIT_CATEGORIES = [
     {"name": "Property, Plant and Equipment ICT", "icon": "", "desc": "Audit physical plant and equipment."}
 ]
 
-# MySQL Configuration
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'alias_db'
-
-mysql = MySQL(app)
-
+# ---------------- DECORATORS ----------------
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ---------------- LOGIN ----------------
 @app.route('/login', methods=['GET', 'POST'])
@@ -41,19 +55,21 @@ def login():
         cur.execute("SELECT * FROM users WHERE username=%s", (username,))
         user = cur.fetchone()
 
-        if user and user[2] == password:
+        if user and user['password'] == password:
+            session.clear()
             session['logged_in'] = True
             session['username'] = username
             return redirect(url_for('home'))
-        else:
-            flash("Login failed. Wrong username or password.")
-            return redirect(url_for('login'))
+
+        flash("Login failed. Wrong username or password.")
+        return redirect(url_for('login'))
 
     return render_template('login.html')
 
 
 # ---------------- LOGOUT ----------------
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
+@login_required
 def logout():
     session.clear()
     return redirect(url_for('login'))
@@ -61,24 +77,22 @@ def logout():
 
 # ---------------- HOME ----------------
 @app.route('/')
+@login_required
 def home():
-    if 'logged_in' in session:
-        return render_template('index.html')
-    return redirect(url_for('login'))
+    return render_template('index.html')
 
 @app.route('/inventory')
+@login_required
 def inventory():
-    if 'logged_in' in session:
-        return render_template('index.html')
-    return redirect(url_for('login'))
+    return render_template('index.html')
 
 @app.route('/audit')
+@login_required
 def audit_categories():
-  if 'logged_in' in session:
     return render_template('audit_categories.html', categories=AUDIT_CATEGORIES)
-  return redirect(url_for('login'))
 
 @app.route('/audit/<category_name>', methods=['GET', 'POST'])
+@login_required
 def audit_form(category_name):
     filtered_items = [item for item in SYSTEM_INVENTORY if item['category'] == category_name]
 
@@ -93,6 +107,7 @@ def audit_form(category_name):
                            items=filtered_items)
 
 @app.route('/audit/<category_name>/download-pdf', methods=['POST'])
+@login_required
 def download_pdf(category_name):
     form = request.form
 
@@ -141,10 +156,10 @@ def download_pdf(category_name):
     return response
 
 @app.route('/history')
+@login_required
 def history():
-    if 'logged_in' in session:
-        return render_template('index.html')
-    return redirect(url_for('login'))
+    return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT"))
+    app.run(host='0.0.0.0', port=port, debug=False)
