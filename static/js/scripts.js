@@ -1,4 +1,3 @@
-// Script for ALIAS Dashboard Charts
 document.addEventListener('DOMContentLoaded', function () {
 
     // Default Chart
