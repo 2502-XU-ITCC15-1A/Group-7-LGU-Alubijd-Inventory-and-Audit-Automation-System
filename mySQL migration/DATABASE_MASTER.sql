@@ -73,18 +73,41 @@ CREATE TABLE IF NOT EXISTS inventory_items (
     FOREIGN KEY (subcategory_id) REFERENCES subcategories(id)
 );
 
--- Seed Phase 1 Data Example
+-- Seed Core Data
 INSERT IGNORE INTO categories (name) VALUES 
 ('OFFICE SUPPLIES'), ('DRUGS & MEDICINES'), ('ICT EQUIPMENT'), 
-('FURNITURE & FIXTURES'), ('VEHICLE & SPARE PARTS'), ('CONSTRUCTION MATERIALS');
+('FURNITURE & FIXTURES'), ('VEHICLE & SPARE PARTS'), ('CONSTRUCTION MATERIALS'),
+('EMERGENCY SUPPLIES'), ('VETERINARY SUPPLIES');
 
 INSERT IGNORE INTO subcategories (name, category_id) VALUES
+-- OFFICE SUPPLIES
 ('STATIONERY', (SELECT id FROM categories WHERE name='OFFICE SUPPLIES')),
+('PAPER PRODUCTS', (SELECT id FROM categories WHERE name='OFFICE SUPPLIES')),
+-- DRUGS & MEDICINES
 ('ANTIBIOTICS', (SELECT id FROM categories WHERE name='DRUGS & MEDICINES')),
+('VITAMINS', (SELECT id FROM categories WHERE name='DRUGS & MEDICINES')),
+-- ICT EQUIPMENT
 ('LAPTOPS', (SELECT id FROM categories WHERE name='ICT EQUIPMENT')),
+('PRINTERS', (SELECT id FROM categories WHERE name='ICT EQUIPMENT')),
+-- FURNITURE & FIXTURES
 ('TABLES', (SELECT id FROM categories WHERE name='FURNITURE & FIXTURES')),
+('CHAIRS', (SELECT id FROM categories WHERE name='FURNITURE & FIXTURES')),
+-- VEHICLE & SPARE PARTS
 ('TIRES', (SELECT id FROM categories WHERE name='VEHICLE & SPARE PARTS')),
-('CEMENT', (SELECT id FROM categories WHERE name='CONSTRUCTION MATERIALS'));
+('BATTERIES', (SELECT id FROM categories WHERE name='VEHICLE & SPARE PARTS')),
+-- EMERGENCY SUPPLIES
+('FIRST AID KITS', (SELECT id FROM categories WHERE name='EMERGENCY SUPPLIES')),
+('FLASHLIGHTS', (SELECT id FROM categories WHERE name='EMERGENCY SUPPLIES')),
+-- VETERINARY SUPPLIES
+('ANIMAL VACCINES', (SELECT id FROM categories WHERE name='VETERINARY SUPPLIES')),
+('SURGICAL TOOLS', (SELECT id FROM categories WHERE name='VETERINARY SUPPLIES'));
+
+-- Sample Inventory Items for Testing
+INSERT IGNORE INTO inventory_items (category_id, subcategory_id, name, quantity, unit_of_measure, unit_value, remarks) VALUES
+((SELECT id FROM categories WHERE name='EMERGENCY SUPPLIES'), (SELECT id FROM subcategories WHERE name='FIRST AID KITS'), 'Heavy Duty First Aid Kit', 50, 'Box', 1200.00, 'For disaster response'),
+((SELECT id FROM categories WHERE name='DRUGS & MEDICINES'), (SELECT id FROM subcategories WHERE name='ANTIBIOTICS'), 'Amoxicillin 500mg', 1000, 'Capsule', 5.50, 'Stock for local health center'),
+((SELECT id FROM categories WHERE name='ICT EQUIPMENT'), (SELECT id FROM subcategories WHERE name='LAPTOPS'), 'Lenovo ThinkPad E14', 12, 'Unit', 45000.00, 'Assigned to ICT Dept'),
+((SELECT id FROM categories WHERE name='VETERINARY SUPPLIES'), (SELECT id FROM subcategories WHERE name='ANIMAL VACCINES'), 'Anti-Rabies Vaccine', 200, 'Vial', 150.00, 'For annual vaccination program');
 
 
 -- ------------------------------------------------------
@@ -110,8 +133,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Seed Admin User (Password: passwordadmin)
-INSERT IGNORE INTO users (username, password, role) 
-VALUES ('admin', 'passwordadmin', 'admin');
+INSERT IGNORE INTO users (username, password, full_name, role, email) 
+VALUES ('admin', 'passwordadmin', 'System Administrator', 'admin', 'admin@alias.gov.ph');
 
 
 -- ------------------------------------------------------
