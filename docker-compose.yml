@@ -30,7 +30,6 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      # This automatically executes your SQL script when the DB starts for the first time
       - ./static/sql/login.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/mysql
     healthcheck:
