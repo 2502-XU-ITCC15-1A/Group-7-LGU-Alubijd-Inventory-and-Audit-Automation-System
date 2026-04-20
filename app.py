@@ -19,21 +19,6 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
-SYSTEM_INVENTORY = [
-    {"id": "FC-001",  "category": "Fuel Consumption",   "name": "Diesel (Liters)",            "system_qty": 500},
-    {"id": "TV-001",  "category": "Transport Vehicle",  "name": "Ambulance Tires",            "system_qty": 8},
-    {"id": "MED-042", "category": "Medicines",          "name": "Paracetamol 500mg (Box)",    "system_qty": 120},
-    {"id": "EMP-001", "category": "Emergency Supplies", "name": "Canned Goods (Box)",         "system_qty": 50},
-    {"id": "VET-011", "category": "Veterinary Supplies","name": "Anti-Rabies Vaccine (Vial)", "system_qty": 15},
-]
-
-AUDIT_CATEGORIES = [
-    {"name": "Fuel Consumption",   "icon": "⛽", "desc": "Audit fuel reserves and usage logs."},
-    {"name": "Transport Vehicle",  "icon": "🚑", "desc": "Audit vehicle parts, tires, and maintenance."},
-    {"name": "Medicines",          "icon": "💊", "desc": "Audit pharmaceutical stocks and expiration dates."},
-    {"name": "Emergency Supplies", "icon": "🔦", "desc": "Audit relief goods, water, and rescue equipment."},
-    {"name": "Property, Plant and Equipment ICT", "icon": "", "desc": "Audit physical plant and equipment."}
-]
 
 # ---------------- DECORATORS ----------------
 def login_required(f):
@@ -59,7 +44,7 @@ def login():
             session.clear()
             session['logged_in'] = True
             session['username'] = username
-            return redirect(url_for('home'))
+            return redirect(url_for('dashboard'))
 
         flash("Login failed. Wrong username or password.")
         return redirect(url_for('login'))
@@ -82,10 +67,10 @@ def download_pdf(category_name):
     from pdf_generator import generate_physical_count_pdf
     form = request.form
 
-    as_of_date        = form.get('as_of_date', datetime.date.today().strftime('%B %d, %Y'))
-    accountable_person = form.get('accountable_person', 'DOLLYN JEAN A. SABELLINA')
-    position          = form.get('position', 'MUNICIPAL ACCOUNTANT')
-    department        = form.get('department', 'ACCOUNTING')
+    as_of_date         = form.get('as_of_date', datetime.date.today().strftime('%B %d, %Y'))
+    accountable_person = form.get('accountable_person', '')
+    position           = form.get('position', '')
+    department         = form.get('department', '')
 
     articles   = form.getlist('pdf_article[]')
     descs      = form.getlist('pdf_desc[]')
@@ -131,7 +116,17 @@ def download_pdf(category_name):
 @app.route('/')
 @login_required
 def dashboard():
-    return render_template('index.html')
+    cur = mysql.connection.cursor()
+    cur.execute("""
+        SELECT i.*, c.name as category_name, s.name as subcategory_name 
+        FROM inventory_items i
+        JOIN categories c ON i.category_id = c.id
+        JOIN subcategories s ON i.subcategory_id = s.id
+        ORDER BY i.date_created DESC, i.id DESC
+        LIMIT 10
+    """)
+    recent_items = cur.fetchall()
+    return render_template('index.html', recent_items=recent_items)
 
 @app.route('/inventory')
 @login_required
@@ -141,13 +136,29 @@ def inventory():
 @app.route('/audit')
 @login_required
 def audit():
-    return render_template('audit.html', categories=AUDIT_CATEGORIES)
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id, name FROM categories ORDER BY name ASC")
+    categories = cur.fetchall()
+    return render_template('audit.html', categories=categories)
 
 @app.route('/audit/<category_name>')
 @login_required
 def audit_form(category_name):
-    # Filter items for this category (mocking the previous logic)
-    filtered_items = [item for item in SYSTEM_INVENTORY if item['category'] == category_name]
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id FROM categories WHERE name = %s", (category_name,))
+    cat = cur.fetchone()
+    
+    filtered_items = []
+    if cat:
+        cur.execute("""
+            SELECT i.*, c.name as category_name, s.name as subcategory_name 
+            FROM inventory_items i
+            JOIN categories c ON i.category_id = c.id
+            JOIN subcategories s ON i.subcategory_id = s.id
+            WHERE i.category_id = %s
+        """, (cat['id'],))
+        filtered_items = cur.fetchall()
+        
     return render_template('audit_form.html', category_name=category_name, items=filtered_items)
 
 @app.route('/history')

@@ -70,30 +70,20 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for item in recent_items %}
                     <tr>
-                        <td>SUPPLY</td>
-                        <td>EMERGENCY</td>
-                        <td>COFFEE</td>
-                        <td>01/01/2025</td>
-                        <td>03/31/2025</td>
-                        <td style="color: #e74c3c;">2</td>
+                        <td>{{ item.category_name }}</td>
+                        <td>{{ item.subcategory_name }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.date_created.strftime('%m/%d/%Y') if item.date_created else '' }}</td>
+                        <td>{{ item.date_updated.strftime('%m/%d/%Y') if item.date_updated else '' }}</td>
+                        <td style="color: {% if item.quantity <= 5 %}#e74c3c{% elif item.quantity <= 20 %}#f1c40f{% else %}var(--success){% endif %};">{{ item.quantity }}</td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td>SUPPLY</td>
-                        <td>EMERGENCY</td>
-                        <td>COFFEE</td>
-                        <td>01/01/2025</td>
-                        <td>03/31/2025</td>
-                        <td style="color: #f1c40f;">12</td>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No recent updates found.</td>
                     </tr>
-                    <tr>
-                        <td>SUPPLY</td>
-                        <td>EMERGENCY</td>
-                        <td>COFFEE</td>
-                        <td>01/01/2025</td>
-                        <td>03/31/2025</td>
-                        <td style="color: var(--success);">24</td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
