@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header-container">
+    <div class="page-header-content">
+        <div class="page-header-title">
+            <h1>HISTORY</h1>
+            <p class="welcome-msg">Welcome, <em>{{ session['username'] }}!</em></p>
+        </div>
+        <div class="header-logo-container">
+            <img src="https://res.cloudinary.com/dvblizd3z/image/upload/v1773499759/Alubijid%20Local%20Inventory%20and%20Audit%20System%20%28ALIAS%29/Logo_bpla9k.png" alt="ALIAS">
+            <p class="header-logo-text">ALUBIJID LOCAL INVENTORY<br>AND AUDIT SYSTEM</p>
+        </div>
+    </div>
+</div>
+
+<div class="history-content" style="padding: 0 2rem 2rem;">
+    <div class="data-table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>OFFICER</th>
+                    <th>DATE</th>
+                    <th>CATEGORY</th>
+                    <th>ACTIVITY</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sabellina, Dollyn</td>
+                    <td>April 18, 2026</td>
+                    <td>Medicines</td>
+                    <td>Updated Inventory</td>
+                    <td><span style="color: var(--success);">● Done</span></td>
+                </tr>
+                <tr>
+                    <td>Admin</td>
+                    <td>April 17, 2026</td>
+                    <td>Fuel</td>
+                    <td>Added New Entry</td>
+                    <td><span style="color: var(--success);">● Done</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
