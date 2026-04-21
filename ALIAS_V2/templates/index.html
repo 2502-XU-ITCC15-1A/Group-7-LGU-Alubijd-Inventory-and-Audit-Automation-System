@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALIAS – Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="dashboard-container">
+
+    {% include '_sidebar.html' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-titles">
+                <h1>DASHBOARD</h1>
+                <h2><em>Welcome, {{ session.full_name.split()[0] if session.full_name else 'User' }}!</em></h2>
+            </div>
+            <div class="header-logo-right">
+                <img src="{{ url_for('static', filename='img/Menu_Header.png') }}" alt="ALIAS" class="header-logo">
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div style="padding: 0 40px; margin-top: 12px;">
+            {% for cat, msg in messages %}
+            <div class="flash flash-{{ cat }}">{{ msg }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="content-wrapper">
+
+            <section class="trend-analysis">
+                <div class="section-title">
+                    <h2>SUPPLY TREND ANALYSIS</h2>
+                    <p>Emergency Supply, Medical Supply, Veterinary Supply</p>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-badge">{{ emergency_qty }}</div>
+                        <canvas id="emergencyChart"></canvas>
+                        <h3>Emergency Supply</h3>
+                        <p>Inflow and Outflow 2025</p>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-badge">{{ medical_qty }}</div>
+                        <canvas id="medicalChart"></canvas>
+                        <h3>Medical Supply</h3>
+                        <p>Inflow and Outflow 2025</p>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-badge">{{ veterinary_qty }}</div>
+                        <canvas id="veterinaryChart"></canvas>
+                        <h3>Veterinary Supply</h3>
+                        <p>Inflow and Outflow 2025</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="inventory-history">
+                <h2>INVENTORY UPDATE HISTORY</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CATEGORY</th>
+                                <th>SUBCATEGORY</th>
+                                <th>NAME</th>
+                                <th>DATE CREATED</th>
+                                <th>DATE UPDATED</th>
+                                <th>QUANTITY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recent_items %}
+                            <tr>
+                                <td>{{ item.category }}</td>
+                                <td>{{ item.subcategory }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.created_at.strftime('%m/%d/%Y') }}</td>
+                                <td>{{ item.updated_at.strftime('%m/%d/%Y') }}</td>
+                                <td class="{% if item.system_qty <= 5 %}qty-red{% elif item.system_qty <= 15 %}qty-yellow{% else %}qty-green{% endif %}">
+                                    {{ item.system_qty }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="6" style="text-align:center;color:#9aa5c0;padding:20px;">No items yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<script>
+function makeChart(id, qty) {
+    const pts = [];
+    let v = Math.max(3, qty * 0.3);
+    for (let i = 0; i < 8; i++) { v += (Math.random() - 0.3) * qty * 0.25; v = Math.max(1, v); pts.push(v); }
+    pts.push(qty);
+    new Chart(document.getElementById(id), {
+        type: 'line',
+        data: {
+            labels: pts.map((_, i) => i),
+            datasets: [{ data: pts, borderColor: '#5269be', borderWidth: 2, fill: true,
+                backgroundColor: 'rgba(82,105,190,0.15)', tension: 0.4, pointRadius: 0 }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, animation: false }
+    });
+}
+makeChart('emergencyChart',  {{ emergency_qty }});
+makeChart('medicalChart',    {{ medical_qty }});
+makeChart('veterinaryChart', {{ veterinary_qty }});
+</script>
+<script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+</body>
+</html>
