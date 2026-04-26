@@ -12,7 +12,9 @@ PAGE = landscape(A4)
 W, H = PAGE
 
 def generate_physical_count_pdf(category_name, as_of_date, accountable_person,
-                                  position, department, items):
+                                   position, department, items,
+                                   certified_by=None, certified_role=None,
+                                   approved_by=None, approved_role=None):
     buffer = io.BytesIO()
 
     doc = SimpleDocTemplate(
@@ -20,7 +22,8 @@ def generate_physical_count_pdf(category_name, as_of_date, accountable_person,
         leftMargin=15*mm, rightMargin=15*mm,
         topMargin=12*mm, bottomMargin=12*mm
     )
-
+    
+    # ... (rest of styles)
     title_s  = ParagraphStyle('t',  fontName='Times-Bold',   fontSize=11, alignment=TA_CENTER, leading=14)
     sub_s    = ParagraphStyle('s',  fontName='Times-Roman',  fontSize=10, alignment=TA_CENTER, leading=13)
     acct_s   = ParagraphStyle('a',  fontName='Times-Roman',  fontSize=8.5, leading=11)
@@ -63,8 +66,10 @@ def generate_physical_count_pdf(category_name, as_of_date, accountable_person,
             uv   = float(item.get('unit_value', 0)  or 0)
             diff = qp - qc
             val  = diff * uv
-            s_q  = (f'+{diff:.0f}' if diff > 0 else f'{diff:.0f}') if item.get('qty_physical', '') != '' else ''
-            s_v  = (f'+{val:,.2f}' if val > 0 else f'{val:,.2f}') if item.get('qty_physical', '') != '' else ''
+            
+            # Consistent sign formatting: + for overage, - for shortage
+            s_q  = (f'{diff:+.0f}') if item.get('qty_physical', '') != '' else ''
+            s_v  = (f'{val:+,.2f}') if item.get('qty_physical', '') != '' else ''
             uv_s = f"{uv:,.2f}" if uv else ''
         except:
             s_q = s_v = uv_s = ''
@@ -113,7 +118,7 @@ def generate_physical_count_pdf(category_name, as_of_date, accountable_person,
         [P('Certified Correct by:', sig_s), P('Approved by:', sig_s),
          P('Verified by:', sig_s),          P('', sig_s)],
         [Spacer(1,12*mm), Spacer(1,12*mm), Spacer(1,12*mm), Spacer(1,12*mm)],
-        [P('<u>PAUL ROGER P. NERI</u>', sig_b_s), P('<u>EMMANNUEL. JAMIS, DVM</u>', sig_b_s),
+        [P(f'<u>{certified_by.upper()}</u>', sig_b_s), P(f'<u>{approved_by.upper()}</u>', sig_b_s),
          P('', sig_b_s), P('', sig_b_s)],
         [P('GSO-Designate<br/>Inventory Chair Committee', sig_s),
          P('Municipal Mayor', sig_s),
