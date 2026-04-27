@@ -4,7 +4,7 @@
 -- =====================================
 
 CREATE DATABASE IF NOT EXISTS alias_db;
-USE atlas;
+USE alias_db;
 
 -- =====================================
 -- USERS TABLE
