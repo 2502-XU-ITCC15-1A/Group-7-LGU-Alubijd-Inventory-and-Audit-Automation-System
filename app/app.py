@@ -30,6 +30,10 @@ def audit():
 def history():
     return render_template('index.html')
 
+@app.route('/create-account')
+def create_account():
+    return render_template('create.account.html')
+
 @app.route('/test-db')
 def test_db():
     try:

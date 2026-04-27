@@ -90,4 +90,15 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         options: commonOptions
     });
+})
+
+// Sidebar Collapse Toggle
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function () {
+            sidebar.classList.toggle('collapsed');
+        });
+    }
 });

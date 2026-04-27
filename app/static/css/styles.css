@@ -38,14 +38,18 @@ body {
     display: flex;
     flex-direction: column;
     padding: 20px 0;
-    height: 100vh;
+    min-height: 100vh;
     position: sticky;
     top: 0;
+    transition: width 0.3s;
+    position: relative;
+    overflow: hidden;
 }
 
 .sidebar-logo {
     padding: 0 20px;
     margin-bottom: 30px;
+    transition: opacity 0.3s;
 }
 
 .logo-placeholder {
@@ -81,10 +85,12 @@ body {
     color: var(--primary-blue);
     font-size: 14px;
     margin-bottom: 10px;
+    transition: opacity 0.3s;
 }
 
 .sidebar-nav ul {
     list-style: none;
+    transition: opacity 0.3s;
 }
 
 .sidebar-nav li {
@@ -112,6 +118,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    transition: opacity 0.3s;
 }
 
 .profile-card {
@@ -182,6 +189,10 @@ body {
     opacity: 0.9;
 }
 
+.sidebar-toggle { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; display: flex; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; }
+.sidebar-toggle span { width: 20px; height: 2.5px; background-color: var(--primary-blue); border-radius: 2px; transition: all 0.3s; }
+.sidebar.collapsed { width: 80px !important; }
+.sidebar.collapsed .sidebar-logo, .sidebar.collapsed .menu-label, .sidebar.collapsed .sidebar-nav li a, .sidebar.collapsed .sidebar-footer { opacity: 0; display: none; }
 
 /* ---------- Main Content ---------- */
 .main-content {
@@ -197,6 +208,7 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    gap: 20px;
 }
 
 .header-titles h1 {
