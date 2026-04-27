@@ -38,6 +38,9 @@
     const deleteModal    = document.getElementById('deleteModal');
     const deleteCancelBtn= document.getElementById('deleteCancelBtn');
     const deleteConfirmBtn=document.getElementById('deleteConfirmBtn');
+    const successModal   = document.getElementById('successModal');
+    const successTitle   = document.getElementById('successTitle');
+    const successContBtn = document.getElementById('successContinueBtn');
     const toast          = document.getElementById('toast');
 
     if (!catLabel) return; // Not on inventory page
@@ -139,7 +142,7 @@
       tr.dataset.id = item.id;
 
       const isExpanded = expandedItemId === item.id;
-      const chevron = isExpanded ? '&#x2303;' : '&#x2304;';
+      const chevron = isExpanded ? '&#9652;' : '&#9662;';
 
       tr.innerHTML = `
         <td class="td-category">${escHtml(item.category_name)}</td>
@@ -310,7 +313,9 @@
         editingItemId  = null;
         expandedItemId = null;
         await loadItems();
-        showToast('Item updated successfully.', 'success');
+        
+        successTitle.textContent = 'ITEM EDITED!';
+        successModal.classList.remove('hidden');
       } catch (e) {
         showToast('Error: ' + e.message, 'error');
       }
@@ -338,7 +343,9 @@
         editingItemId  = null;
         deleteTargetId = null;
         await loadItems();
-        showToast('Item deleted.', 'success');
+        
+        successTitle.textContent = 'ITEM DELETED!';
+        successModal.classList.remove('hidden');
       } catch (e) {
         showToast('Error: ' + e.message, 'error');
       }
@@ -399,12 +406,17 @@
         expandedItemId = newItem.id;
         editingItemId  = newItem.id;
         renderTable();
-        showToast('Item created! Fill in the details below.', 'success');
+        successTitle.textContent = 'ITEM CREATED!';
+        successModal.classList.remove('hidden');
         const el = document.querySelector(`[data-detail-for="${newItem.id}"]`);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } catch (e) {
         showToast('Error: ' + e.message, 'error');
       }
+    });
+
+    successContBtn.addEventListener('click', () => {
+      successModal.classList.add('hidden');
     });
 
     // ── Search & Sort ─────────────────────────────

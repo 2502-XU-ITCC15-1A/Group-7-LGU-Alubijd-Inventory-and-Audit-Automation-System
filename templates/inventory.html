@@ -5,11 +5,10 @@
     <div class="page-header-content">
         <div class="page-header-title">
             <h1>INVENTORY</h1>
-            <p class="welcome-msg">Welcome, <em>{{ session['username'] }}!</em></p>
+            <p class="welcome-msg">Welcome, <em>{{ session['full_name'] }}!</em></p>
         </div>
         <div class="header-logo-container">
-            <img src="https://res.cloudinary.com/dvblizd3z/image/upload/v1773499759/Alubijid%20Local%20Inventory%20and%20Audit%20System%20%28ALIAS%29/Logo_bpla9k.png" alt="ALIAS">
-            <p class="header-logo-text">ALUBIJID LOCAL INVENTORY<br>AND AUDIT SYSTEM</p>
+            <img src="https://res.cloudinary.com/dvblizd3z/image/upload/v1777188010/Alubijid%20Local%20Inventory%20and%20Audit%20System%20%28ALIAS%29/Menu_Header_zc0nex.png" alt="ALIAS Header">
         </div>
     </div>
 </div>
@@ -34,15 +33,18 @@
         <input type="text" id="searchInput" placeholder="Search for list">
     </div>
 
-    <!-- Category Navigator -->
-    <div class="category-nav">
-        <button id="catPrev">&lt;</button>
-        <span id="catLabel">Category</span>
-        <button id="catNext">&gt;</button>
-    </div>
+    <!-- Category & Subcategory Navigation -->
+    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem;">
+        <div class="category-nav">
+            <button id="catPrev">&lt;</button>
+            <span id="catLabel">Category</span>
+            <button id="catNext">&gt;</button>
+        </div>
 
-    <!-- Hidden element for subcategories (handled by JS) -->
-    <div id="subcategoryTabs" style="display: none;"></div>
+        <div id="subcategoryTabs" style="display: flex; gap: 0.8rem;">
+            <!-- Subcategory buttons loaded via JS -->
+        </div>
+    </div>
 
     <div class="data-table-container">
         <table class="data-table" id="inventoryTable">
@@ -84,13 +86,20 @@
 </div>
 
 <div id="deleteModal" class="modal hidden">
-    <div class="modal-content" style="max-width: 400px; text-align: center;">
-        <h2 style="color: #e74c3c; margin-bottom: 1rem;">Delete Item?</h2>
-        <p id="deleteMsg" style="margin-bottom: 2rem; color: var(--text-muted);"></p>
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
+        <h2 style="color: #e74c3c; margin-bottom: 1rem; font-weight: 800;">Delete Item?</h2>
+        <p id="deleteMsg" style="margin-bottom: 2rem; color: var(--text-muted); font-weight: 600;"></p>
         <div style="display: flex; justify-content: center; gap: 1rem;">
-            <button class="btn-back" id="deleteCancelBtn">Cancel</button>
-            <button class="btn-save" id="deleteConfirmBtn" style="background: #e74c3c;">Delete</button>
+            <button class="btn-primary" id="deleteCancelBtn" style="background: var(--text-muted); padding: 0.7rem 2rem; border-radius: 12px;">Cancel</button>
+            <button class="btn-primary" id="deleteConfirmBtn" style="background: #e74c3c; padding: 0.7rem 2rem; border-radius: 12px;">Delete</button>
         </div>
+    </div>
+</div>
+
+<div id="successModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 350px; text-align: center; padding: 2.5rem; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+        <h2 id="successTitle" style="color: var(--primary-navy); margin-bottom: 2rem; font-size: 1.4rem; font-weight: 900; letter-spacing: 1px;">ITEM EDITED!</h2>
+        <button class="btn-primary" id="successContinueBtn" style="width: 100%; padding: 0.8rem; border-radius: 15px; background: #31449B; font-weight: 800; font-size: 0.9rem;">Continue</button>
     </div>
 </div>
 
