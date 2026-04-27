@@ -31,12 +31,26 @@ Install Flask:
 pip install flask
 ```
 
+<<<<<<< HEAD
 (Optional) Save installed dependencies:
 
 ```bash
 pip freeze > requirements.txt
 ```
 
+=======
+(Optional requirements) Save installed dependencies:
+
+```bash
+pip freeze > requirements.txt
+
+pip install flask-mysqldb
+
+pip show python-dotenv
+```
+
+python3 -m venv venv && source venv/bin/activate && pip install reportlab
+>>>>>>> c2cf7b7 ( Added sql and adjusted app.py)
 ---
 
 ## Run the Application

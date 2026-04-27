@@ -5,6 +5,10 @@
 venv
 env
 ENV
+<<<<<<< HEAD
+=======
+.env
+>>>>>>> c2cf7b7 ( Added sql and adjusted app.py)
 
 # Python
 __pycache__
@@ -45,6 +49,10 @@ instance/
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 # Environment variables
+=======
+# Environment variabless
+>>>>>>> c2cf7b7 ( Added sql and adjusted app.py)
 .env
 .env.local
