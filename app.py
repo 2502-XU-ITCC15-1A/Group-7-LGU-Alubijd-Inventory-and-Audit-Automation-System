@@ -19,6 +19,9 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
+
+
+
 # ---------------- DECORATORS ----------------
 def login_required(f):
     @wraps(f)
@@ -50,11 +53,11 @@ def admin_required(f):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
 
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM users WHERE username=%s", (username,))
+        cur.execute("SELECT * FROM users WHERE email=%s OR username=%s", (email, email))
         user = cur.fetchone()
 
         if user and user['password'] == password:
@@ -65,6 +68,21 @@ def login():
             return redirect(url_for('dashboard'))
 
         flash("Login failed. Wrong username or password.")
+        if user:
+            if user['password'] == password:
+                session.clear()
+                session['logged_in'] = True
+                session['email'] = email
+                session['username'] = user.get('username', email)
+                session['full_name'] = user.get('full_name') if user.get('full_name') else user.get('username', email)
+                session['user_id'] = user['id']
+                session['role'] = user.get('role', 'staff')
+                return redirect(url_for('dashboard'))
+            else:
+                flash("Incorrect password. Please try again.")
+        else:
+            flash("Incorrect email address. User not found.")
+        
         return redirect(url_for('login'))
 
     return render_template('login.html')
@@ -127,6 +145,108 @@ def download_pdf(category_name):
     response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+@app.route('/api/generate_pdf_monthly')
+@login_required
+def generate_pdf_monthly():
+    from pdf_generator import generate_physical_count_pdf
+    category_name = request.args.get('category')
+    subcategory_name = request.args.get('subcategory')
+    month = int(request.args.get('month', datetime.date.today().month))
+    year = int(request.args.get('year', datetime.date.today().year))
+    day = request.args.get('day')
+    
+    # Get accountability info from modal
+    accountable_person = request.args.get('person', 'First Middle Last Name')
+    position = request.args.get('position', 'Position Title')
+    department = request.args.get('dept', 'Department Name')
+    certified_by = request.args.get('certified', 'First Middle Last Name')
+    certified_role = request.args.get('certified_role', 'Position Title')
+    approved_by = request.args.get('approved', 'First Middle Last Name')
+    approved_role = request.args.get('approved_role', 'Position Title')
+
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id FROM categories WHERE name = %s", (category_name,))
+    cat = cur.fetchone()
+
+    if not cat:
+        return "Category not found", 404
+
+    # Build query for LIVE data matching the activity
+    query = """
+        SELECT i.*, c.name as category_name, s.name as subcategory_name 
+        FROM inventory_items i
+        JOIN categories c ON i.category_id = c.id
+        JOIN subcategories s ON i.subcategory_id = s.id
+        WHERE i.category_id = %s 
+    """
+    params = [cat['id']]
+
+    if subcategory_name:
+        query += " AND s.name = %s "
+        params.append(subcategory_name)
+
+    if day:
+        # Match items created OR updated on that specific day
+        query += """ 
+            AND (
+                (DAY(i.date_created) = %s AND MONTH(i.date_created) = %s AND YEAR(i.date_created) = %s)
+                OR 
+                (DAY(i.date_updated) = %s AND MONTH(i.date_updated) = %s AND YEAR(i.date_updated) = %s)
+            )
+        """
+        params.extend([int(day), month, year, int(day), month, year])
+    else:
+        query += """
+            AND (
+                (MONTH(i.date_created) = %s AND YEAR(i.date_created) = %s)
+                OR 
+                (MONTH(i.date_updated) = %s AND YEAR(i.date_updated) = %s)
+            )
+        """
+        params.extend([month, year, month, year])
+    
+    cur.execute(query, tuple(params))
+    items = cur.fetchall()
+
+    import calendar
+    month_name = calendar.month_name[month]
+    as_of_date = f"{month_name} {day + ', ' if day else ''}{year}"
+
+    # Prepare items for PDF generator
+    pdf_items = []
+    for it in items:
+        pdf_items.append({
+            'article': it['article'] or it['subcategory_name'],
+            'description': it['name'],
+            'property_no': it['stock_number'] or '',
+            'unit_measure': it['unit_of_measure'] or '',
+            'unit_value': it['unit_value'] or 0,
+            'qty_card': it['quantity'],
+            'qty_physical': it['on_hand_per_count'] or 0,
+            'remarks': it['remarks'] or ''
+        })
+
+    pdf_buffer = generate_physical_count_pdf(
+        category_name=category_name,
+        as_of_date=as_of_date,
+        accountable_person=accountable_person,
+        position=position,
+        department=department,
+        items=pdf_items,
+        certified_by=certified_by,
+        certified_role=certified_role,
+        approved_by=approved_by,
+        approved_role=approved_role
+    )
+
+    day_str = f"_{day}" if day else ""
+    filename = f"Audit_{category_name.replace(' ', '_')}{day_str}_{month_name}_{year}.pdf"
+    response = make_response(pdf_buffer.read())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
 # ---------------- PAGE ROUTES ----------------
 @app.route('/')
 @login_required
@@ -154,7 +274,40 @@ def inventory():
 @login_required
 def audit():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT id, name FROM categories ORDER BY name ASC")
+    # Ensure table exists (failsafe)
+    cur.execute("SHOW TABLES LIKE 'audit_logs'")
+    if not cur.fetchone():
+        # Create table without cascade delete to preserve history
+        cur.execute("""
+            CREATE TABLE audit_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                item_id INT NULL,
+                user_id INT NOT NULL,
+                action_type ENUM('CREATE', 'UPDATE', 'DELETE', 'QUANTITY_ADJUST') NOT NULL,
+                old_value TEXT,
+                new_value TEXT,
+                change_reason VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """)
+        # Backfill existing items into audit logs
+        cur.execute("""
+            INSERT INTO audit_logs (item_id, user_id, action_type, new_value, created_at)
+            SELECT id, %s, 'CREATE', 'Initial inventory sync', date_created FROM inventory_items
+        """, (session.get('user_id') or 1,))
+        mysql.connection.commit()
+
+    # Also backfill if table exists but is empty
+    cur.execute("SELECT COUNT(*) as count FROM audit_logs")
+    if cur.fetchone()['count'] == 0:
+        cur.execute("""
+            INSERT INTO audit_logs (item_id, user_id, action_type, new_value, created_at)
+            SELECT id, %s, 'CREATE', 'Inventory Sync', date_created FROM inventory_items
+        """, (session.get('user_id') or 1,))
+        mysql.connection.commit()
+
+    cur.execute("SELECT * FROM categories")
     categories = cur.fetchall()
     return render_template('audit.html', categories=categories)
 
@@ -179,11 +332,71 @@ def audit_form(category_name):
 
     return render_template('audit_form.html', category_name=category_name, items=filtered_items)
 
+@app.route('/audit/history/<category_name>')
+@login_required
+def audit_category_history(category_name):
+    cur = mysql.connection.cursor()
+    cur.execute("""
+        SELECT 
+            DATE(l.created_at) as audit_date,
+            c.name as category_name, 
+            s.name as subcategory_name,
+            COUNT(*) as activity_count
+        FROM audit_logs l
+        JOIN inventory_items i ON l.item_id = i.id
+        JOIN categories c ON i.category_id = c.id
+        JOIN subcategories s ON i.subcategory_id = s.id
+        WHERE c.name = %s
+        GROUP BY audit_date, category_name, subcategory_name
+        ORDER BY audit_date DESC LIMIT 50
+    """, (category_name,))
+    history = cur.fetchall()
+    return render_template('audit_history.html', category_name=category_name, audit_history=history)
 
 @app.route('/history')
 @login_required
 def history():
-    return render_template('history.html')
+    cur = mysql.connection.cursor()
+    # Ensure table exists and is populated
+    cur.execute("SHOW TABLES LIKE 'audit_logs'")
+    if not cur.fetchone():
+        cur.execute("""
+            CREATE TABLE audit_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                item_id INT NULL,
+                user_id INT NOT NULL,
+                action_type ENUM('CREATE', 'UPDATE', 'DELETE', 'QUANTITY_ADJUST') NOT NULL,
+                old_value TEXT,
+                new_value TEXT,
+                change_reason VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """)
+        cur.execute("""
+            INSERT INTO audit_logs (item_id, user_id, action_type, new_value, created_at)
+            SELECT id, %s, 'CREATE', 'Inventory Sync', date_created FROM inventory_items
+        """, (session.get('user_id') or 1,))
+        mysql.connection.commit()
+    
+    cur.execute("SELECT COUNT(*) as count FROM audit_logs")
+    if cur.fetchone()['count'] == 0:
+        cur.execute("""
+            INSERT INTO audit_logs (item_id, user_id, action_type, new_value, created_at)
+            SELECT id, %s, 'CREATE', 'Inventory Sync', date_created FROM inventory_items
+        """, (session.get('user_id') or 1,))
+        mysql.connection.commit()
+
+    cur.execute("""
+        SELECT l.*, COALESCE(u.full_name, u.username) as officer_name, c.name as category_name
+        FROM audit_logs l
+        JOIN users u ON l.user_id = u.id
+        LEFT JOIN inventory_items i ON l.item_id = i.id
+        LEFT JOIN categories c ON i.category_id = c.id
+        ORDER BY l.created_at DESC LIMIT 50
+    """)
+    logs = cur.fetchall()
+    return render_template('history.html', logs=logs)
 
 
 @app.route('/manage-accounts')
@@ -296,7 +509,9 @@ def get_inventory():
             query += " AND i.subcategory_id = %s"
             params.append(subcategory_id)
         if search:
-            query += " AND (i.name LIKE %s OR i.article LIKE %s)"
+            query += " AND (i.name LIKE %s OR i.article LIKE %s OR c.name LIKE %s OR s.name LIKE %s)"
+            params.append(f"%{search}%")
+            params.append(f"%{search}%")
             params.append(f"%{search}%")
             params.append(f"%{search}%")
 
@@ -341,6 +556,12 @@ def create_item():
     """, (data['category_id'], data['subcategory_id'], data['name'], data['quantity']))
     mysql.connection.commit()
     new_id = cur.lastrowid
+    
+    # Audit Log
+    cur.execute("INSERT INTO audit_logs (item_id, user_id, action_type, new_value) VALUES (%s, %s, 'CREATE', %s)",
+                (new_id, session.get('user_id'), str(data)))
+    mysql.connection.commit()
+    
     return {"id": new_id}, 201
 
 
@@ -363,6 +584,12 @@ def update_item(item_id):
     cur = mysql.connection.cursor()
     cur.execute(f"UPDATE inventory_items SET {', '.join(fields)}, date_updated = CURDATE() WHERE id = %s",
                 tuple(params))
+    cur.execute(f"UPDATE inventory_items SET {', '.join(fields)}, date_updated = CURDATE() WHERE id = %s", tuple(params))
+    
+    # Audit Log
+    cur.execute("INSERT INTO audit_logs (item_id, user_id, action_type, new_value) VALUES (%s, %s, 'UPDATE', %s)",
+                (item_id, session.get('user_id'), str(data)))
+    
     mysql.connection.commit()
     return {"message": "Updated"}
 
@@ -371,6 +598,10 @@ def update_item(item_id):
 @login_required
 def delete_item(item_id):
     cur = mysql.connection.cursor()
+    # Audit Log before delete
+    cur.execute("INSERT INTO audit_logs (item_id, user_id, action_type) VALUES (%s, %s, 'DELETE')",
+                (item_id, session.get('user_id')))
+    
     cur.execute("DELETE FROM inventory_items WHERE id = %s", (item_id,))
     mysql.connection.commit()
     return {"message": "Deleted"}
