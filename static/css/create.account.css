@@ -1,0 +1,35 @@
+:root {
+    --accent: #31449b;
+    --muted: #5f6d8b;
+    --bg: #eef3fd;
+    --card: #fff;
+    --border: #d9def3;
+}
+
+body { background: var(--bg); }
+
+.create-page { display: flex; justify-content: center; align-items: flex-start; padding: 15px 0 0 0; }
+
+.create-card { width: 100%; max-width: 1200px; padding: 20px 24px 15px 24px; border-radius: 28px; background: var(--card); border: 1px solid #e5e7f0; box-shadow: 0 20px 45px rgba(38,64,151,.08); }
+
+.form-header { margin-bottom: 20px; }
+
+.badge { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 999px; background: rgba(49,68,155,.1); color: var(--accent); font: 700 11px/1.2 Inter,sans-serif; letter-spacing: .5px; margin-bottom: 12px; }
+
+.form-header h2 { margin: 0 0 8px; color: var(--accent); font-size: 28px; }
+.form-header p { color: var(--muted); font: 14px/1.6 Inter,sans-serif; max-width: 640px; }
+
+.create-form { display: grid; gap: 16px; }
+.field-grid { display: grid; grid-template-columns: repeat(2,minmax(250px,1fr)); gap: 14px; }
+label { display: flex; flex-direction: column; gap: 6px; font: 600 13px/1.3 Inter,sans-serif; color: #333; }
+
+input,select { width: 100%; min-height: 44px; padding: 0 16px; border: 1px solid var(--border); border-radius: 12px; background: #fbfcff; color: #333; font: 14px/1.4 Inter,sans-serif; transition: border-color .2s, box-shadow .2s; }
+input:focus,select:focus { outline: 0; border-color: #7180f3; box-shadow: 0 0 0 4px rgba(113,128,243,.12); }
+
+.form-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.form-note { color: var(--muted); font: 13px/1.5 Inter,sans-serif; max-width: 560px; }
+.submit-btn { padding: 14px 28px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; font: 700 14px/1 Inter,sans-serif; cursor: pointer; transition: transform .2s, opacity .2s; }
+.submit-btn:hover { opacity: .95; transform: translateY(-1px); }
+
+@media (max-width: 960px) { .field-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .content-wrapper { padding: 24px 20px; } .create-card { padding: 24px; } .top-header { flex-direction: column; align-items: flex-start; gap: 20px; } }
