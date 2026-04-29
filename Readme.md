@@ -53,6 +53,15 @@ python3 -m venv venv && source venv/bin/activate && pip install reportlab
 >>>>>>> c2cf7b7 ( Added sql and adjusted app.py)
 ---
 
+## .env
+'''bash
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DB=alias_db
+MYSQL_PORT=3306
+'''
+
 ## Run the Application
 
 Start the Flask server:
