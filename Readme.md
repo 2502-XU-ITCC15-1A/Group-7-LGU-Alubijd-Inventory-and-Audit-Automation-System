@@ -54,13 +54,14 @@ python3 -m venv venv && source venv/bin/activate && pip install reportlab
 ---
 
 ## .env
-'''bash
+
+```bash
 MYSQL_HOST=localhost
 MYSQL_USER=root
 MYSQL_PASSWORD=
 MYSQL_DB=alias_db
 MYSQL_PORT=3306
-'''
+```
 
 ## Run the Application
 
