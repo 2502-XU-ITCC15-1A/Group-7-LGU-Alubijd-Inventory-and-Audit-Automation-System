@@ -20,7 +20,10 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
-
+# ---------------- ADMIN CREATES ACCOUNTS FOR STAFF ----------------
+@app.route('/create-account')
+def create_account():
+    return render_template('create.account.html')
 
 
 # ---------------- DECORATORS ----------------
