@@ -29,6 +29,7 @@ body {
     background-color: var(--body-bg);
     color: var(--text-dark);
     line-height: 1.5;
+    overflow-x: hidden;
 }
 
 /* ── Typography ─────────────────────────────────── */
@@ -167,10 +168,11 @@ h4 {
 .dashboard-container {
     display: flex;
     min-height: 100vh;
+    position: relative;
 }
 
+/* .sidebar base styles are in the SIDEBAR TOGGLE SYSTEM section below */
 .sidebar {
-    width: 380px;
     background-color: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -179,7 +181,6 @@ h4 {
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 100;
 }
 
 .sidebar-logo {
@@ -381,8 +382,8 @@ input::placeholder {
     background-color: var(--primary-blue);
 }
 
+/* .main-content margin is handled dynamically in SIDEBAR TOGGLE SYSTEM section */
 .main-content {
-    margin-left: 380px;
     flex: 1;
     min-height: 100vh;
 }
@@ -730,3 +731,118 @@ input::placeholder {
 .detail-panel-actions .btn-back:hover {
     color: var(--primary-navy);
 }
+
+
+/* ══════════════════════════════════════════════════
+   SIDEBAR TOGGLE SYSTEM
+   ══════════════════════════════════════════════════ */
+
+/* ── Layout Shell ───────────────────────────────── */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* ── Sidebar base ───────────────────────────────── */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 200;
+    /* Smooth slide transition */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease;
+    transform: translateX(0);
+    will-change: transform;
+}
+
+/* Sidebar open state */
+.sidebar--open {
+    transform: translateX(0);
+    box-shadow: none;
+}
+
+/* Sidebar closed state – slides fully off-screen */
+.sidebar--closed {
+    transform: translateX(-100%);
+    box-shadow: 6px 0 30px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Main content ───────────────────────────────── */
+.main-content {
+    min-height: 100vh;
+    position: relative;
+    /* Sidebar open: shift right and constrain width so content never overflows */
+    margin-left: 280px;
+    width: calc(100vw - 280px);
+    max-width: calc(100vw - 280px);
+    /* Smooth transition for both margin and width */
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Sidebar closed: main content expands to full viewport width */
+.sidebar-is-closed .main-content {
+    margin-left: 0;
+    width: 100vw;
+    max-width: 100vw;
+}
+
+/* ── Sidebar Toggle Button ──────────────────────── */
+/*  Always visible, sits in the top-left of the main content area */
+.sidebar-toggle-btn {
+    position: fixed;
+    top: 16px;
+    left: calc(280px + 16px);   /* right of sidebar when open */
+    z-index: 190;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--primary-navy);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(49, 68, 155, 0.35);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.2s ease,
+                transform 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.sidebar-toggle-btn:hover {
+    background: var(--primary-blue);
+    transform: scale(1.07);
+}
+
+.sidebar-toggle-btn:active {
+    transform: scale(0.96);
+}
+
+/* When sidebar is closed, move button to the left edge */
+.sidebar-is-closed .sidebar-toggle-btn {
+    left: 16px;
+}
+
+/* ── Icon switching ─────────────────────────────── */
+/* Default: show hamburger menu icon, hide back-chevron */
+.sidebar-toggle-btn .icon-menu  { display: block; }
+.sidebar-toggle-btn .icon-close { display: none; }
+
+/* When sidebar is open, flip to back-chevron */
+.sidebar-toggle-btn.btn--sidebar-open .icon-menu  { display: none; }
+.sidebar-toggle-btn.btn--sidebar-open .icon-close { display: block; }
