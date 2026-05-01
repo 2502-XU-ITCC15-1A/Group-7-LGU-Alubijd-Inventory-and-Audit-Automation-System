@@ -1,93 +1,108 @@
-// Script for ALIAS Dashboard Charts
-document.addEventListener('DOMContentLoaded', function () {
+(function () {
+    'use strict';
 
-    // Default Chart
-    const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
+    // ── Dashboard Charts ───────────────────────────
+    window.initDashboardCharts = function() {
+        const emergencyCtx = document.getElementById('emergencyChart');
+        if (!emergencyCtx) return;
+
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
             },
-            tooltip: {
-                enabled: false
+            scales: {
+                x: { display: true, grid: { display: false } },
+                y: { display: true, beginAtZero: true, max: 100 }
             }
-        },
-        scales: {
-            x: {
-                display: false
+        };
+
+        function createGradient(ctx) {
+            let gradient = ctx.createLinearGradient(0, 0, 0, 120);
+            gradient.addColorStop(0, 'rgba(49, 68, 155, 0.5)');
+            gradient.addColorStop(1, 'rgba(49, 68, 155, 0.0)');
+            return gradient;
+        }
+
+        // Chart 1: Emergency Supply
+        new Chart(emergencyCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [{
+                    data: [10, 10, 40, 35, 70, 75, 85],
+                    fill: true,
+                    backgroundColor: createGradient(emergencyCtx.getContext('2d')),
+                    borderColor: '#31449b',
+                    tension: 0.4
+                }]
             },
-            y: {
-                display: false,
-                beginAtZero: true,
-                max: 100
-            }
-        },
-        elements: {
-            point: {
-                radius: 0
-            },
-            line: {
-                tension: 0.4,
-                borderWidth: 2,
-                borderColor: '#31449b'
-            }
-        },
-        layout: {
-            padding: 0
+            options: commonOptions
+        });
+
+        // Chart 2: Medical Supply
+        const medicalCtx = document.getElementById('medicalChart');
+        if (medicalCtx) {
+            new Chart(medicalCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        data: [15, 20, 10, 50, 40, 60, 70],
+                        fill: true,
+                        backgroundColor: createGradient(medicalCtx.getContext('2d')),
+                        borderColor: '#31449b',
+                        tension: 0.4
+                    }]
+                },
+                options: commonOptions
+            });
+        }
+
+        // Chart 3: Veterinary Supply
+        const veterinaryCtx = document.getElementById('veterinaryChart');
+        if (veterinaryCtx) {
+            new Chart(veterinaryCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        data: [40, 20, 60, 50, 40, 70, 80],
+                        fill: true,
+                        backgroundColor: createGradient(veterinaryCtx.getContext('2d')),
+                        borderColor: '#31449b',
+                        tension: 0.4
+                    }]
+                },
+                options: commonOptions
+            });
         }
     };
 
-    // gradient
-    function createGradient(ctx) {
-        let gradient = ctx.createLinearGradient(0, 0, 0, 120);
-        gradient.addColorStop(0, 'rgba(49, 68, 155, 0.5)'); // Deep blue transparent
-        gradient.addColorStop(1, 'rgba(49, 68, 155, 0.0)'); // Fades to transparent
-        return gradient;
-    }
+    // ── Initialization ─────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.getElementById('sidebarToggle');
 
-    // Chart 1: Emergency Supply
-    const ctx1 = document.getElementById('emergencyChart').getContext('2d');
-    new Chart(ctx1, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-            datasets: [{
-                data: [10, 10, 40, 35, 70, 75, 85],
-                fill: true,
-                backgroundColor: createGradient(ctx1)
-            }]
-        },
-        options: commonOptions
+        if (toggleBtn && sidebar && mainContent) {
+            // Check if sidebar should be collapsed on mobile by default
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            }
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                toggleBtn.classList.toggle('active');
+            });
+        }
+
+        // Initialize dashboard charts if on dashboard
+        if (window.initDashboardCharts) window.initDashboardCharts();
     });
 
-    // Chart 2: Medical Supply
-    const ctx2 = document.getElementById('medicalChart').getContext('2d');
-    new Chart(ctx2, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-            datasets: [{
-                data: [15, 20, 10, 50, 40, 60, 70],
-                fill: true,
-                backgroundColor: createGradient(ctx2)
-            }]
-        },
-        options: commonOptions
-    });
-
-    // Chart 3: Veterinary Supply
-    const ctx3 = document.getElementById('veterinaryChart').getContext('2d');
-    new Chart(ctx3, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-            datasets: [{
-                data: [40, 20, 60, 50, 40, 70, 80],
-                fill: true,
-                backgroundColor: createGradient(ctx3)
-            }]
-        },
-        options: commonOptions
-    });
-});
+})();
