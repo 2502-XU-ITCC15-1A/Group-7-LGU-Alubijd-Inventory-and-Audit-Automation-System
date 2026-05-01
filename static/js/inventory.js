@@ -395,10 +395,12 @@
       }
 
       try {
-        const newItem = await apiFetch('/api/inventory', {
+        const response = await apiFetch('/api/inventory', {
           method: 'POST',
           body: JSON.stringify({ category_id: catId, subcategory_id: subId, quantity: qty, name })
         });
+        
+        const newItem = response;
         createModal.classList.add('hidden');
         createCategory.value = '';
         createSubcat.innerHTML = '<option value="">Subcategory</option>';
@@ -409,8 +411,18 @@
         expandedItemId = newItem.id;
         editingItemId = newItem.id;
         renderTable();
-        successTitle.textContent = 'ITEM CREATED!';
+        
+        // Show appropriate success message based on action
+        if (newItem.action === 'updated') {
+          successTitle.textContent = 'QUANTITY UPDATED!';
+        } else {
+          successTitle.textContent = 'ITEM CREATED!';
+        }
         successModal.classList.remove('hidden');
+        
+        // Show toast with the action-specific message
+        showToast(newItem.message, 'success');
+        
         const el = document.querySelector(`[data-detail-for="${newItem.id}"]`);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } catch (e) {
