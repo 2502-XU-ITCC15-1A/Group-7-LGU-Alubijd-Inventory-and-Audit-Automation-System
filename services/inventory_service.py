@@ -70,6 +70,16 @@ def get_items_by_category_name(db, category_name):
     return cat, cur.fetchall()
 
 
+def get_item_by_details(db, category_id, subcategory_id, name):
+    """Check if item with same category, subcategory, and name exists."""
+    cur = db.connection.cursor()
+    cur.execute(
+        "SELECT * FROM inventory_items WHERE category_id = %s AND subcategory_id = %s AND name = %s LIMIT 1",
+        (category_id, subcategory_id, name),
+    )
+    return cur.fetchone()
+
+
 # ── Write ─────────────────────────────────────────────────────────────────────
 
 def create_item(db, category_id, subcategory_id, name, quantity):
@@ -79,6 +89,19 @@ def create_item(db, category_id, subcategory_id, name, quantity):
         (category_id, subcategory_id, name, quantity),
     )
     return cur.lastrowid
+
+
+def add_quantity_to_item(db, item_id, quantity_to_add):
+    """Add quantity to an existing item and return the updated quantity."""
+    cur = db.connection.cursor()
+    cur.execute(
+        "UPDATE inventory_items SET quantity = quantity + %s, date_updated = CURDATE() WHERE id = %s",
+        (quantity_to_add, item_id),
+    )
+    # Get the updated item
+    cur.execute("SELECT quantity FROM inventory_items WHERE id = %s", (item_id,))
+    result = cur.fetchone()
+    return result["quantity"] if result else None
 
 
 _EXCLUDED_KEYS = {"id", "category_name", "subcategory_name"}
