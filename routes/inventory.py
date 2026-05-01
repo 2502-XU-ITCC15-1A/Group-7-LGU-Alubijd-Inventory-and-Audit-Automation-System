@@ -10,6 +10,8 @@ from services.inventory_service import (
     update_item,
     delete_item,
     serialize_item,
+    get_item_by_details,
+    add_quantity_to_item,
 )
 
 inventory_bp = Blueprint("inventory", __name__, url_prefix="/api")
@@ -53,16 +55,41 @@ def api_get_inventory():
 @login_required
 def api_create_item():
     data = request.json or {}
-    new_id = create_item(
-        mysql,
-        data.get("category_id"),
-        data.get("subcategory_id"),
-        data.get("name"),
-        data.get("quantity", 0),
-    )
-    log_action(mysql, new_id, session.get("user_id"), "CREATE", new_value=str(data))
-    mysql.connection.commit()
-    return {"id": new_id}, 201
+    category_id = data.get("category_id")
+    subcategory_id = data.get("subcategory_id")
+    name = data.get("name")
+    quantity = data.get("quantity", 0)
+    
+    # Check if item with same name, category, and subcategory already exists
+    existing_item = get_item_by_details(mysql, category_id, subcategory_id, name)
+    
+    if existing_item:
+        # Item exists - add quantity to existing item
+        item_id = existing_item["id"]
+        new_quantity = add_quantity_to_item(mysql, item_id, quantity)
+        log_action(
+            mysql, 
+            item_id, 
+            session.get("user_id"), 
+            "QUANTITY_ADJUST", 
+            new_value=f"Added {quantity} units. New total: {new_quantity}"
+        )
+        mysql.connection.commit()
+        return {
+            "id": item_id, 
+            "action": "updated",
+            "message": f"Item quantity successfully added! New total: {new_quantity} units"
+        }, 200
+    else:
+        # Item doesn't exist - create new item
+        new_id = create_item(mysql, category_id, subcategory_id, name, quantity)
+        log_action(mysql, new_id, session.get("user_id"), "CREATE", new_value=str(data))
+        mysql.connection.commit()
+        return {
+            "id": new_id, 
+            "action": "created",
+            "message": f"New item '{name}' created successfully!"
+        }, 201
 
 
 @inventory_bp.route("/inventory/<int:item_id>", methods=["PUT"])
