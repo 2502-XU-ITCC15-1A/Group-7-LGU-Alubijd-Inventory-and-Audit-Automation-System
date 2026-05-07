@@ -6,26 +6,40 @@
 
 /*
   ------------------------------------------------------
-  BEGINNER'S GUIDE: HOW TO USE THIS FILE
+  HOW TO USE THIS FILE
   ------------------------------------------------------
-  
+
   1. HOW TO RUN THIS FILE (Terminal Command):
      Open your terminal and run:
      mysql -u adminAlias -ppasswordadmin alias_db < "mySQL migration/DATABASE_MASTER.sql"
 
   2. MANUAL EXAMPLES (If you want to add data manually):
-     
+
      -- To add a New Category:
      INSERT INTO categories (name) VALUES ('ELECTRONICS');
 
      -- To add a New User (Staff):
-     INSERT INTO users (username, password, role) VALUES ('staff_joven', 'pass123', 'staff');
+     INSERT INTO users (email, password, full_name, role)
+     VALUES ('admin@gso.gov.ph', 'pass123', 'Admin Test', 'staff');
 
-  3. TROUBLESHOOTING:
-     - Error 1045 (Access Denied): Double check your password! 
+  3. VERIFYING YOUR DATABASE (Useful Commands):
+
+     -- To See all Tables in the Database:
+     SHOW TABLES;
+
+     -- To See the Structure of a specific Table:
+     DESCRIBE users;
+
+     -- To See all Data inside a Table:
+     SELECT * FROM users;
+
+     -- To See specific columns from a Table:
+     SELECT email, role FROM users;
+
+  4. TROUBLESHOOTING:
+     - Error 1045 (Access Denied): Double check your password!
        It should be: passwordadmin
      - Database Not Found: This script will create 'alias_db' for you automatically.
-  ------------------------------------------------------
 */
 
 CREATE DATABASE IF NOT EXISTS alias_db;
@@ -74,8 +88,8 @@ CREATE TABLE IF NOT EXISTS inventory_items (
 );
 
 -- Seed Core Data
-INSERT IGNORE INTO categories (name) VALUES 
-('OFFICE SUPPLIES'), ('DRUGS & MEDICINES'), ('ICT EQUIPMENT'), 
+INSERT IGNORE INTO categories (name) VALUES
+('OFFICE SUPPLIES'), ('DRUGS & MEDICINES'), ('ICT EQUIPMENT'),
 ('FURNITURE & FIXTURES'), ('VEHICLE & SPARE PARTS'), ('CONSTRUCTION MATERIALS'),
 ('EMERGENCY SUPPLIES'), ('VETERINARY SUPPLIES');
 
@@ -117,9 +131,8 @@ INSERT IGNORE INTO inventory_items (category_id, subcategory_id, name, quantity,
 
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    email VARCHAR(255),
     full_name VARCHAR(255),
     age INT,
     birthdate DATE,
@@ -128,13 +141,13 @@ CREATE TABLE IF NOT EXISTS users (
     skills TEXT,
     work_experience TEXT,
     profile_picture VARCHAR(512),
-    role ENUM('admin', 'staff', 'viewer') DEFAULT 'staff',
+    role ENUM('admin', 'staff') DEFAULT 'staff',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Seed Admin User (Password: passwordadmin)
-INSERT IGNORE INTO users (username, password, full_name, role, email) 
-VALUES ('admin', 'passwordadmin', 'System Administrator', 'admin', 'admin@alias.gov.ph');
+INSERT IGNORE INTO users (email, password, full_name, role)
+VALUES ('admin@alias.gov.ph', 'passwordadmin', 'System Administrator', 'admin');
 
 
 -- ------------------------------------------------------
@@ -191,11 +204,11 @@ INSERT IGNORE INTO departments (name) VALUES ('HEALTH'), ('ENGINEERING'), ('ICT'
   ------------------------------------------------------
   INCREMENTAL UPDATES (For existing databases)
   ------------------------------------------------------
-  If you already have the database but are missing the 
+  If you already have the database but are missing the
   new Profile fields, run these commands:
 
   USE alias_db;
-  ALTER TABLE users 
+  ALTER TABLE users
   ADD COLUMN IF NOT EXISTS email VARCHAR(255),
   ADD COLUMN IF NOT EXISTS full_name VARCHAR(255),
   ADD COLUMN IF NOT EXISTS age INT,
@@ -205,6 +218,7 @@ INSERT IGNORE INTO departments (name) VALUES ('HEALTH'), ('ENGINEERING'), ('ICT'
   ADD COLUMN IF NOT EXISTS skills TEXT,
   ADD COLUMN IF NOT EXISTS work_experience TEXT,
   ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(512),
-  ADD COLUMN IF NOT EXISTS role ENUM('admin', 'staff', 'viewer') DEFAULT 'staff';
+  ADD COLUMN IF NOT EXISTS role ENUM('admin', 'staff') DEFAULT 'staff',
+  ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
   ------------------------------------------------------
 */

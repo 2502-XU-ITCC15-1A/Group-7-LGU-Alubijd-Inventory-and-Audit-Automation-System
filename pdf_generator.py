@@ -84,6 +84,8 @@ def generate_physical_count_pdf(
     certified_role="GSO-Designate / Inventory Chair Committee",
     approved_by="",
     approved_role="Municipal Mayor",
+    report_type="semi-annual",   # "semi-annual" or "annual"
+    month_range="",              # e.g. "January-June" or "July-December"
 ):
 
     if items is None:
@@ -107,15 +109,21 @@ def generate_physical_count_pdf(
     story = []
 
     # Header
+    report_label = "ANNUAL" if (report_type or "").lower() == "annual" else "SEMI-ANNUAL"
     story.append(Paragraph(
-        "REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT",
+        f"{report_label} REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT",
         S["title"]
     ))
     story.append(Paragraph(
         f"{category_name.upper()} EQUIPMENT",
         S["subtitle"]
     ))
-    story.append(Paragraph(f"As of {as_of_date}", S["date"]))
+    # Date / period line
+    if report_label == "SEMI-ANNUAL" and month_range:
+        range_display = month_range.replace("-", " – ")
+        story.append(Paragraph(f"For the period {range_display} {as_of_date}", S["date"]))
+    else:
+        story.append(Paragraph(f"As of {as_of_date}", S["date"]))
 
     person_str = accountable_person or "_______________"
     pos_str    = position           or "_______________"

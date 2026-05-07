@@ -29,7 +29,6 @@ body {
     background-color: var(--body-bg);
     color: var(--text-dark);
     line-height: 1.5;
-    overflow-x: hidden;
 }
 
 /* ── Typography ─────────────────────────────────── */
@@ -168,11 +167,10 @@ h4 {
 .dashboard-container {
     display: flex;
     min-height: 100vh;
-    position: relative;
 }
 
-/* .sidebar base styles are in the SIDEBAR TOGGLE SYSTEM section below */
 .sidebar {
+    width: 380px;
     background-color: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -181,6 +179,14 @@ h4 {
     position: fixed;
     left: 0;
     top: 0;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
 }
 
 .sidebar-logo {
@@ -382,10 +388,61 @@ input::placeholder {
     background-color: var(--primary-blue);
 }
 
-/* .main-content margin is handled dynamically in SIDEBAR TOGGLE SYSTEM section */
 .main-content {
+    margin-left: 380px;
     flex: 1;
     min-height: 100vh;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.expanded {
+    margin-left: 0;
+}
+
+/* ── Sidebar Toggle ────────────────────────────── */
+.sidebar-toggle {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1100;
+    background: var(--primary-navy);
+    border: none;
+    border-radius: 8px; /* Slightly rounded for a modern look */
+    width: 42px;
+    height: 42px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle span {
+    display: block;
+    width: 22px;
+    height: 2.5px;
+    background-color: var(--white);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.1);
+    background: var(--primary-blue);
+}
+
+/* No X animation - keep hamburger */
+.sidebar-toggle.active span {
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+/* Ensure sidebar doesn't overlap toggle too much */
+.sidebar {
+    padding-top: 5rem; /* Give space for the toggle if it's over the sidebar */
 }
 
 /* ── Loader ─────────────────────────────────────── */
@@ -470,6 +527,7 @@ input::placeholder {
     outline: none;
     width: 100%;
     margin-bottom: 1rem;
+    pointer-events: auto;
 }
 
 .modal-input:focus {
@@ -732,117 +790,106 @@ input::placeholder {
     color: var(--primary-navy);
 }
 
-
-/* ══════════════════════════════════════════════════
-   SIDEBAR TOGGLE SYSTEM
-   ══════════════════════════════════════════════════ */
-
-/* ── Layout Shell ───────────────────────────────── */
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-    position: relative;
+/* ── Manage Accounts ────────────────────────────── */
+.form-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    margin-left: 4px;
 }
 
-/* ── Sidebar base ───────────────────────────────── */
-.sidebar {
-    width: 280px;
-    min-width: 280px;
-    background-color: var(--sidebar-bg);
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+.role-badge {
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.role-admin {
+    background: #e8ecff;
+    color: var(--primary-navy);
+}
+
+.role-staff {
+    background: #e8f8ee;
+    color: #27ae60;
+}
+
+#accountsTable tbody tr:hover {
+    background: #f8faff;
+}
+
+/* Notification banner (manage accounts page) */
+#notifBanner {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+#notifBanner.success {
+    background: #e8f8ee;
+    border: 1px solid #27ae60;
+    color: #27ae60;
+}
+
+#notifBanner.error {
+    background: #ffe8e8;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+/* ── Toast notification (inventory page) ────────── */
+.toast {
     position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 200;
-    /* Smooth slide transition */
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.3s ease;
-    transform: translateX(0);
-    will-change: transform;
-}
-
-/* Sidebar open state */
-.sidebar--open {
-    transform: translateX(0);
-    box-shadow: none;
-}
-
-/* Sidebar closed state – slides fully off-screen */
-.sidebar--closed {
-    transform: translateX(-100%);
-    box-shadow: 6px 0 30px rgba(0, 0, 0, 0.12);
-}
-
-/* ── Main content ───────────────────────────────── */
-.main-content {
-    min-height: 100vh;
-    position: relative;
-    /* Sidebar open: shift right and constrain width so content never overflows */
-    margin-left: 280px;
-    width: calc(100vw - 280px);
-    max-width: calc(100vw - 280px);
-    /* Smooth transition for both margin and width */
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-x: hidden;
-    box-sizing: border-box;
-}
-
-/* Sidebar closed: main content expands to full viewport width */
-.sidebar-is-closed .main-content {
-    margin-left: 0;
-    width: 100vw;
-    max-width: 100vw;
-}
-
-/* ── Sidebar Toggle Button ──────────────────────── */
-/*  Always visible, sits in the top-left of the main content area */
-.sidebar-toggle-btn {
-    position: fixed;
-    top: 16px;
-    left: calc(280px + 16px);   /* right of sidebar when open */
-    z-index: 190;
-    width: 40px;
-    height: 40px;
+    bottom: 20px;
+    right: 20px;
+    padding: 1rem 2rem;
     border-radius: 10px;
-    background: var(--primary-navy);
     color: white;
-    border: none;
-    cursor: pointer;
+    z-index: 3000;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.toast.success {
+    background-color: var(--success);
+}
+
+.toast.error {
+    background-color: var(--danger);
+}
+
+/* ── Audit Category Buttons ─────────────────────── */
+.audit-category-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(49, 68, 155, 0.35);
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.2s ease,
-                transform 0.2s ease;
-    flex-shrink: 0;
-    padding: 0;
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem 3rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    text-decoration: none;
+    color: var(--primary-navy);
+    font-size: 1.2rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
 }
 
-.sidebar-toggle-btn:hover {
-    background: var(--primary-blue);
-    transform: scale(1.07);
+.audit-category-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(49, 68, 155, 0.1);
+    border-color: var(--primary-navy);
 }
-
-.sidebar-toggle-btn:active {
-    transform: scale(0.96);
-}
-
-/* When sidebar is closed, move button to the left edge */
-.sidebar-is-closed .sidebar-toggle-btn {
-    left: 16px;
-}
-
-/* ── Icon switching ─────────────────────────────── */
-/* Default: show hamburger menu icon, hide back-chevron */
-.sidebar-toggle-btn .icon-menu  { display: block; }
-.sidebar-toggle-btn .icon-close { display: none; }
-
-/* When sidebar is open, flip to back-chevron */
-.sidebar-toggle-btn.btn--sidebar-open .icon-menu  { display: none; }
-.sidebar-toggle-btn.btn--sidebar-open .icon-close { display: block; }
