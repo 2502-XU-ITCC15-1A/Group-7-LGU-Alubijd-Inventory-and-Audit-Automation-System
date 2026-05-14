@@ -6,7 +6,7 @@
 
 /*
   ------------------------------------------------------
-  HOW TO USE THIS FILE
+  BEGINNER'S GUIDE: HOW TO USE THIS FILE
   ------------------------------------------------------
   
   1. HOW TO RUN THIS FILE (Terminal Command):
@@ -19,27 +19,13 @@
      INSERT INTO categories (name) VALUES ('ELECTRONICS');
 
      -- To add a New User (Staff):
-     INSERT INTO users (email, password, full_name, role) 
-     VALUES ('admin@gso.gov.ph', 'pass123', 'Admin Test', 'staff');
+     INSERT INTO users (username, password, role) VALUES ('staff_joven', 'pass123', 'staff');
 
-  3. VERIFYING YOUR DATABASE (Useful Commands):
-      
-     -- To See all Tables in the Database:
-     SHOW TABLES;
-
-     -- To See the Structure of a specific Table:
-     DESCRIBE users;
-
-     -- To See all Data inside a Table:
-     SELECT * FROM users;
-
-     -- To See specific columns from a Table:
-     SELECT email, role FROM users;
-
-  4. TROUBLESHOOTING:
+  3. TROUBLESHOOTING:
      - Error 1045 (Access Denied): Double check your password! 
        It should be: passwordadmin
      - Database Not Found: This script will create 'alias_db' for you automatically.
+  ------------------------------------------------------
 */
 
 CREATE DATABASE IF NOT EXISTS alias_db;
@@ -131,8 +117,9 @@ INSERT IGNORE INTO inventory_items (category_id, subcategory_id, name, quantity,
 
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
     full_name VARCHAR(255),
     age INT,
     birthdate DATE,
@@ -141,13 +128,13 @@ CREATE TABLE IF NOT EXISTS users (
     skills TEXT,
     work_experience TEXT,
     profile_picture VARCHAR(512),
-    role ENUM('admin', 'staff') DEFAULT 'staff',
+    role ENUM('admin', 'staff', 'viewer') DEFAULT 'staff',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Seed Admin User (Password: passwordadmin)
-INSERT IGNORE INTO users (email, password, full_name, role) 
-VALUES ('admin@alias.gov.ph', 'passwordadmin', 'System Administrator', 'admin');
+INSERT IGNORE INTO users (username, password, full_name, role, email) 
+VALUES ('admin', 'passwordadmin', 'System Administrator', 'admin', 'admin@alias.gov.ph');
 
 
 -- ------------------------------------------------------
@@ -218,7 +205,6 @@ INSERT IGNORE INTO departments (name) VALUES ('HEALTH'), ('ENGINEERING'), ('ICT'
   ADD COLUMN IF NOT EXISTS skills TEXT,
   ADD COLUMN IF NOT EXISTS work_experience TEXT,
   ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(512),
-  ADD COLUMN IF NOT EXISTS role ENUM('admin', 'staff') DEFAULT 'staff',
-  ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+  ADD COLUMN IF NOT EXISTS role ENUM('admin', 'staff', 'viewer') DEFAULT 'staff';
   ------------------------------------------------------
 */
