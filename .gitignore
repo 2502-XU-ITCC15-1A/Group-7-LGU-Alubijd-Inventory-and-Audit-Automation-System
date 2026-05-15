@@ -1,21 +1,10 @@
 # ALIAS - Git Ignore
 
 # Virtual Environment
-<<<<<<< HEAD
 .venv/
 venv/
 env/
 ENV/
-=======
-.venv
-venv
-env
-ENV
-<<<<<<< HEAD
-=======
-.env
->>>>>>> c2cf7b7 ( Added sql and adjusted app.py)
->>>>>>> Staging
 
 # Python Cache & Build
 __pycache__/
@@ -51,16 +40,4 @@ static/uploads/*
 
 # OS Files
 .DS_Store
-<<<<<<< HEAD
 Thumbs.db
-=======
-Thumbs.db
-
-<<<<<<< HEAD
-# Environment variables
-=======
-# Environment variabless
->>>>>>> c2cf7b7 ( Added sql and adjusted app.py)
-.env
-.env.local
->>>>>>> Staging

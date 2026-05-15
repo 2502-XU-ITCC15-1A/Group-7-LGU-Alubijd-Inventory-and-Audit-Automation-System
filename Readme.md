@@ -37,20 +37,13 @@ venv\Scripts\activate
 pip install flask flask-mysqldb python-dotenv reportlab
 ```
 
-<<<<<<< HEAD
 ### 3. Database Migration
 ALIAS uses a master migration script to set up the entire database structure and seed data.
-=======
-<<<<<<< HEAD
-(Optional) Save installed dependencies:
-
->>>>>>> Staging
 ```bash
 # Connect to your MySQL and run the master script
 mysql -u your_user -p alias_db < "mySQL migration/DATABASE_MASTER.sql"
 ```
 
-<<<<<<< HEAD
 ### 4. Configuration
 Create a `.env` file in the root directory with your credentials:
 ```env
@@ -60,42 +53,11 @@ MYSQL_PASSWORD=your_password
 MYSQL_DB=alias_db
 SECRET_KEY=your_secure_random_key
 ```
-=======
-=======
-(Optional requirements) Save installed dependencies:
-
-```bash
-pip freeze > requirements.txt
-
-pip install flask-mysqldb
-
-pip show python-dotenv
-```
-
-python3 -m venv venv && source venv/bin/activate && pip install reportlab
->>>>>>> c2cf7b7 ( Added sql and adjusted app.py)
----
-
-## .env
-
-```bash
-MYSQL_HOST=localhost
-MYSQL_USER=root
-MYSQL_PASSWORD=
-MYSQL_DB=alias_db
-MYSQL_PORT=3306
-```
-
-## Run the Application
-
-Start the Flask server:
->>>>>>> Staging
 
 ### 5. Run the Application
 ```bash
 python app.py
 ```
-<<<<<<< HEAD
 
 ## Project Structure
 
@@ -118,6 +80,4 @@ ALIAS/
 - **Templates**: Uses a unified layout system (`base.html`).
 
 ---
-*Developed for ITCC42 - Alubijid Local Inventory and Audit System Project.*
-=======
->>>>>>> Staging
+***Developed for ITCC 15, 16, 40, 42 - Alubijid Local Inventory and Audit System Project.***
