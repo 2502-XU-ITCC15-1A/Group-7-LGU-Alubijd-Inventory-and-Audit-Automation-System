@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* ═══════════════════════════════════════════════
    ALIAS – inventory.js
    Handles: category tabs, subcategory tabs, table
@@ -1006,4 +1005,3 @@
   };
 
 })();
->>>>>>> Staging

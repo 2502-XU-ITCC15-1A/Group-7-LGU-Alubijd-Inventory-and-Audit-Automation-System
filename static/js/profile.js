@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 (function () {
     'use strict';
 
@@ -300,4 +299,3 @@
         });
     }
 })();
->>>>>>> Staging

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* ═══════════════════════════════════════════════
    ALIAS – audit.js
    Computes variance for the audit categories page
@@ -84,4 +83,3 @@ function calculateVariance(inputElement) {
     }
 }
 }
->>>>>>> Staging
