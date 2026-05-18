@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Page Header — matches Dashboard / Inventory / Audit style -->
+<div class="page-header-container">
+    <div class="page-header-content">
+        <div class="page-header-title">
+            <h1>CREATE ACCOUNT</h1>
+            <p class="welcome-msg">Register new ALIAS staff.</p>
+        </div>
+        <div class="header-logo-container">
+            <img src="https://res.cloudinary.com/dvblizd3z/image/upload/v1777188010/Alubijid%20Local%20Inventory%20and%20Audit%20System%20%28ALIAS%29/Menu_Header_zc0nex.png" alt="ALIAS Header">
+        </div>
+    </div>
+</div>
+
+<!-- Content -->
+<div style="padding: 2rem;">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div style="
+                padding: 0.85rem 1.25rem;
+                border-radius: 12px;
+                margin-bottom: 1.5rem;
+                font-weight: 600;
+                font-size: 0.9rem;
+                background: {{ '#eafaf1' if category == 'success' else '#fdecea' }};
+                color: {{ '#1e8449' if category == 'success' else '#c0392b' }};
+                border: 1px solid {{ '#a9dfbf' if category == 'success' else '#f1aaa5' }};
+            ">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card" style="max-width: 900px; border-radius: 20px; padding: 2.5rem;">
+
+        <!-- Card header -->
+        <div style="margin-bottom: 2rem;">
+            <span style="
+                display: inline-flex;
+                align-items: center;
+                padding: 5px 14px;
+                border-radius: 999px;
+                background: rgba(49,68,155,.1);
+                color: var(--primary-navy);
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: .5px;
+                text-transform: uppercase;
+                margin-bottom: 10px;
+            ">New User</span>
+            <h2 style="color: var(--primary-navy); font-size: 1.6rem; font-weight: 800; margin: 0 0 6px;">Create an Account</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Fill in the details below to add a new staff member to the system.</p>
+        </div>
+
+        <!-- Form -->
+        <form action="{{ url_for('create_account') }}" method="post">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
+
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:700;color:var(--primary-navy);text-transform:uppercase;letter-spacing:.4px;">
+                    Full Name
+                    <input type="text" name="full_name" placeholder="e.g. Juan Dela Cruz" required
+                        class="modal-input" style="margin:0;font-weight:600;text-transform:none;">
+                </label>
+
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:700;color:var(--primary-navy);text-transform:uppercase;letter-spacing:.4px;">
+                    Username
+                    <input type="text" name="username" placeholder="e.g. alias_admin" required
+                        class="modal-input" style="margin:0;font-weight:600;text-transform:none;">
+                </label>
+
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:700;color:var(--primary-navy);text-transform:uppercase;letter-spacing:.4px;">
+                    Email Address
+                    <input type="email" name="email" placeholder="e.g. user@alias.gov.ph" required
+                        class="modal-input" style="margin:0;font-weight:600;text-transform:none;">
+                </label>
+
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:700;color:var(--primary-navy);text-transform:uppercase;letter-spacing:.4px;">
+                    Role / Department
+                    <select name="role" required class="modal-input" style="margin:0;font-weight:600;cursor:pointer;">
+                        <option value="">Select role</option>
+                        <option value="admin">Administrator/Auditor</option>
+                        <option value="inventory">Inventory Staff</option>
+                    </select>
+                </label>
+
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:700;color:var(--primary-navy);text-transform:uppercase;letter-spacing:.4px;">
+                    Password
+                    <input type="password" name="password" placeholder="Enter password" required
+                        class="modal-input" style="margin:0;font-weight:600;">
+                </label>
+
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:700;color:var(--primary-navy);text-transform:uppercase;letter-spacing:.4px;">
+                    Confirm Password
+                    <input type="password" name="confirm_password" placeholder="Repeat password" required
+                        class="modal-input" style="margin:0;font-weight:600;">
+                </label>
+
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-color);">
+                <p style="color:var(--text-muted);font-size:0.82rem;line-height:1.5;max-width:520px;">
+                    Passwords must be at least 8 characters long and include a mix of letters and numbers.
+                </p>
+                <button type="submit" class="btn-primary">Create Account</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<style>
+@media (max-width: 700px) {
+    .create-grid { grid-template-columns: 1fr !important; }
+}
+</style>
+{% endblock %}
