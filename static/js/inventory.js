@@ -31,7 +31,7 @@
     const createNext = document.getElementById('createNext');
     const createCategory = document.getElementById('createCategory');
     const createSubcat = document.getElementById('createSubcategory');
-    const createStockNumber = document.getElementById('createStockNumber');
+    const createStockNumber = document.getElementById('createQuantity');
     const createName = document.getElementById('createName');
     const deleteModal = document.getElementById('deleteModal');
     const deleteCancelBtn = document.getElementById('deleteCancelBtn');
