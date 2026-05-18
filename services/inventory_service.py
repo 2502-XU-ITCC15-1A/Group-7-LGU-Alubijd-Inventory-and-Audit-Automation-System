@@ -69,14 +69,85 @@ def get_items_by_category_name(db, category_name):
     cur.execute(ITEM_SELECT + " WHERE i.category_id = %s", (cat["id"],))
     return cat, cur.fetchall()
 
+def find_item_by_name(db, name, category_id, subcategory_id):
+    cur = db.connection.cursor()
+    cur.execute(
+        """
+        SELECT * FROM inventory_items
+        WHERE LOWER(name) = LOWER(%s)
+          AND category_id = %s
+          AND subcategory_id = %s
+        LIMIT 1
+        """,
+        (name.strip(), category_id, subcategory_id),
+    )
+    return cur.fetchone()
+
+
+def add_quantity_to_item(db, item_id, quantity):
+    cur = db.connection.cursor()
+    cur.execute(
+        "UPDATE inventory_items SET quantity = quantity + %s, date_updated = CURDATE() WHERE id = %s",
+        (quantity, item_id),
+    )
+    return item_id
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 
-def create_item(db, category_id, subcategory_id, name, quantity):
+def create_category(db, name):
+    """Insert a new category. Returns (id, created) tuple."""
+    cur = db.connection.cursor()
+    cur.execute("SELECT id FROM categories WHERE LOWER(name) = LOWER(%s) LIMIT 1", (name.strip(),))
+    existing = cur.fetchone()
+    if existing:
+        return existing["id"], False
+    cur.execute("INSERT INTO categories (name) VALUES (%s)", (name.strip(),))
+    return cur.lastrowid, True
+
+
+def create_subcategory(db, category_id, name):
+    """Insert a new subcategory under category_id. Returns (id, created) tuple."""
     cur = db.connection.cursor()
     cur.execute(
-        "INSERT INTO inventory_items (category_id, subcategory_id, name, quantity) VALUES (%s, %s, %s, %s)",
-        (category_id, subcategory_id, name, quantity),
+        "SELECT id FROM subcategories WHERE category_id = %s AND LOWER(name) = LOWER(%s) LIMIT 1",
+        (category_id, name.strip()),
+    )
+    existing = cur.fetchone()
+    if existing:
+        return existing["id"], False
+    cur.execute(
+        "INSERT INTO subcategories (category_id, name) VALUES (%s, %s)",
+        (category_id, name.strip()),
+    )
+    return cur.lastrowid, True
+
+
+def delete_category(db, cat_id):
+    """Delete a category. Raises ValueError if subcategories or items exist under it."""
+    cur = db.connection.cursor()
+    cur.execute("SELECT COUNT(*) AS cnt FROM subcategories WHERE category_id = %s", (cat_id,))
+    if cur.fetchone()["cnt"] > 0:
+        raise ValueError("Cannot delete: subcategories exist under this category. Delete them first.")
+    cur.execute("SELECT COUNT(*) AS cnt FROM inventory_items WHERE category_id = %s", (cat_id,))
+    if cur.fetchone()["cnt"] > 0:
+        raise ValueError("Cannot delete: inventory items exist under this category.")
+    cur.execute("DELETE FROM categories WHERE id = %s", (cat_id,))
+
+
+def delete_subcategory(db, sub_id):
+    """Delete a subcategory. Raises ValueError if items exist under it."""
+    cur = db.connection.cursor()
+    cur.execute("SELECT COUNT(*) AS cnt FROM inventory_items WHERE subcategory_id = %s", (sub_id,))
+    if cur.fetchone()["cnt"] > 0:
+        raise ValueError("Cannot delete: inventory items exist under this subcategory.")
+    cur.execute("DELETE FROM subcategories WHERE id = %s", (sub_id,))
+
+
+def create_item(db, category_id, subcategory_id, name, quantity, stock_number=None):
+    cur = db.connection.cursor()
+    cur.execute(
+        "INSERT INTO inventory_items (category_id, subcategory_id, name, quantity, stock_number) VALUES (%s, %s, %s, %s, %s)",
+        (category_id, subcategory_id, name, quantity, stock_number),
     )
     return cur.lastrowid
 
