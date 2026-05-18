@@ -463,7 +463,7 @@ body {
   display: flex; justify-content: center; gap: 14px;
 }
 .modal-input {
-  padding: 9px 12px;
+  padding: 200px;
   border: 1.5px solid var(--border);
   border-radius: 20px;
   font-size: 13px;
