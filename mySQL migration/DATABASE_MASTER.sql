@@ -42,8 +42,8 @@
      - Database Not Found: This script will create 'alias_db' for you automatically.
 */
 
-CREATE DATABASE IF NOT EXISTS alias_db;
-USE alias_db;
+-- CREATE DATABASE IF NOT EXISTS alias_db;
+-- USE alias_db;
 
 -- ------------------------------------------------------
 -- PHASE 1: CORE INVENTORY SYSTEM
