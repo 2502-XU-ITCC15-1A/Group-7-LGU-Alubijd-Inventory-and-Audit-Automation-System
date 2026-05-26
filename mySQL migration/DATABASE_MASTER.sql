@@ -44,6 +44,7 @@
 
 -- CREATE DATABASE IF NOT EXISTS alias_db;
 -- USE alias_db;
+use defaultdb;
 
 -- ------------------------------------------------------
 -- PHASE 1: CORE INVENTORY SYSTEM
