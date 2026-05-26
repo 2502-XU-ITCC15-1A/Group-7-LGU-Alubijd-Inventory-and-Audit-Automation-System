@@ -1,0 +1,184 @@
+==================================================
+HOW TO BACKUP AIVEN MYSQL DATABASE USING CMD
+==================================================
+
+Requirements:
+- MySQL Server installed
+- mysqldump available
+- Aiven MySQL credentials
+
+--------------------------------------------------
+STEP 1 — OPEN COMMAND PROMPT
+--------------------------------------------------
+
+Press:
+
+Windows + R
+
+Type:
+
+cmd
+
+Press Enter.
+
+
+--------------------------------------------------
+STEP 2 — GO TO MYSQL BIN FOLDER
+--------------------------------------------------
+
+Type:
+
+cd "C:\Program Files\MySQL\MySQL Server 8.0\bin"
+
+Press Enter.
+
+You should now see:
+
+C:\Program Files\MySQL\MySQL Server 8.0\bin>
+
+
+--------------------------------------------------
+STEP 3 — VERIFY MYSQLDUMP EXISTS
+--------------------------------------------------
+
+Type:
+
+mysqldump --version
+
+If successful, you will see the mysqldump version.
+
+
+--------------------------------------------------
+STEP 4 — RUN BACKUP COMMAND
+--------------------------------------------------
+
+Type:
+
+mysqldump --single-transaction --set-gtid-purged=OFF -h YOUR_HOST -P YOUR_PORT -u YOUR_USERNAME -p YOUR_DATABASE > C:\Users\YOUR_NAME\Downloads\clean-backup.sql
+
+ACTUAL CONNECTION OF AIVEN 
+
+mysqldump --single-transaction --set-gtid-purged=OFF -h itcc15-group7-jamesgica7-d8af.c.aivencloud.com -P 10064 -u avnadmin -p defaultdb > C:\Users\jerem\Downloads\clean-backup.sql
+
+
+--------------------------------------------------
+STEP 5 — ENTER PASSWORD
+--------------------------------------------------
+
+After pressing Enter:
+
+- CMD will ask for password
+- Type your Aiven MySQL password
+- Press Enter
+
+NOTE:
+The password will NOT appear while typing.
+This is normal.
+
+
+--------------------------------------------------
+STEP 6 — WAIT FOR BACKUP TO FINISH
+--------------------------------------------------
+
+If successful:
+- CMD returns to normal
+- No error messages appear
+
+Your backup file will now exist in:
+
+C:\Users\jerem\Downloads\clean-backup.sql
+
+
+==================================================
+EXPLANATION OF COMMAND
+==================================================
+
+mysqldump
+= MySQL backup tool
+
+--single-transaction
+= Creates safe live backup without locking tables
+
+--set-gtid-purged=OFF
+= Prevents Aiven privilege errors
+
+-h
+= Database host/server address
+
+-P
+= Database port number
+
+-u
+= Database username
+
+-p
+= Ask for password securely
+
+defaultdb
+= Database name
+
+>
+= Save output into file
+
+clean-backup.sql
+= Name of backup file
+
+
+==================================================
+HOW TO RESTORE BACKUP IN MYSQL WORKBENCH
+==================================================
+
+1. Open MySQL Workbench
+
+2. Go to:
+
+Server → Data Import
+
+3. Choose:
+
+Import from Self-Contained File
+
+4. Select:
+
+clean-backup.sql
+
+5. Choose target database/schema
+
+6. Click:
+
+Start Import
+
+
+==================================================
+COMMON ERRORS
+==================================================
+
+ERROR:
+'mysqldump' is not recognized
+
+FIX:
+Go to MySQL Server bin folder first.
+
+--------------------------------------------------
+
+ERROR 1227 (SUPER PRIVILEGE ERROR)
+
+FIX:
+Use:
+
+--set-gtid-purged=OFF
+
+--------------------------------------------------
+
+ERROR ACCESS DENIED
+
+FIX:
+Check:
+- Username
+- Password
+- Host
+- Port
+
+==================================================
+END OF TUTORIAL
+==================================================
