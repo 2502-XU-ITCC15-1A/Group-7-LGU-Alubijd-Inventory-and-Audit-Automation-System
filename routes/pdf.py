@@ -40,9 +40,19 @@ def download_pdf(category_name):
 def generate_pdf_monthly():
     category_name    = request.args.get("category")
     subcategory_name = request.args.get("subcategory")
-    month  = int(request.args.get("month", datetime.date.today().month))
-    year   = int(request.args.get("year",  datetime.date.today().year))
+    # support either single month/day or a start/end month range
+    month  = request.args.get("month")
+    year   = request.args.get("year")
     day    = request.args.get("day")
+
+    start_month = request.args.get("start_month")
+    start_year = request.args.get("start_year")
+    end_month = request.args.get("end_month")
+    end_year = request.args.get("end_year")
+
+    # also accept explicit ISO date range parameters: start_date and end_date (YYYY-MM-DD)
+    start_date_str = request.args.get("start_date")
+    end_date_str = request.args.get("end_date")
 
     accountable_person = request.args.get("person",        "First Middle Last Name")
     position           = request.args.get("position",      "Position Title")
@@ -56,13 +66,56 @@ def generate_pdf_monthly():
     if cat is None:
         return "Category not found", 404
 
-    # Further filter by subcategory / date inside the service
-    db_items = _filter_items_by_date(category_name, subcategory_name, month, year, day)
-    if db_items is None:
-        return "Category not found", 404
+    # If explicit ISO start/end provided, use them
+    if start_date_str and end_date_str:
+        try:
+            start_dt = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_dt = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except Exception:
+            return "Invalid start/end date format", 400
 
-    month_name = calendar.month_name[month]
-    as_of_date = f"{month_name} {day + ', ' if day else ''}{year}"
+        if start_dt > end_dt:
+            # swap
+            start_dt, end_dt = end_dt, start_dt
+
+        db_items = _filter_items_by_range(category_name, subcategory_name, start_dt, end_dt)
+        if db_items is None:
+            return "Category not found", 404
+
+        as_of_date = f"{start_dt.strftime('%b %d, %Y')} - {end_dt.strftime('%b %d, %Y')}"
+        filename_range = f"{start_dt.strftime('%Y%m%d')}_{end_dt.strftime('%Y%m%d')}"
+    # If a start/end month provided, use range filter
+    elif start_month and end_month:
+        try:
+            sm = int(start_month); sy = int(start_year or datetime.date.today().year)
+            em = int(end_month); ey = int(end_year or datetime.date.today().year)
+            start_dt = datetime.date(sy, sm, 1)
+            last_day = calendar.monthrange(ey, em)[1]
+            end_dt = datetime.date(ey, em, last_day)
+        except Exception:
+            return "Invalid date range", 400
+
+        db_items = _filter_items_by_range(category_name, subcategory_name, start_dt, end_dt)
+        if db_items is None:
+            return "Category not found", 404
+
+        start_name = calendar.month_name[sm]
+        end_name = calendar.month_name[em]
+        if sy == ey:
+            as_of_date = f"{start_name} - {end_name} {sy}"
+        else:
+            as_of_date = f"{start_name} {sy} - {end_name} {ey}"
+        filename_range = f"{start_name}-{end_name}_{ey}"
+    else:
+        # single month / optional day
+        m = int(month or datetime.date.today().month)
+        y = int(year or datetime.date.today().year)
+        db_items = _filter_items_by_date(category_name, subcategory_name, m, y, day)
+        if db_items is None:
+            return "Category not found", 404
+
+        month_name = calendar.month_name[m]
+        as_of_date = f"{month_name} {day + ', ' if day else ''}{y}"
 
     pdf_items = [_map_db_item_to_pdf(it) for it in db_items]
 
@@ -80,8 +133,45 @@ def generate_pdf_monthly():
     )
 
     day_str  = f"_{day}" if day else ""
-    filename = f"Audit_{category_name.replace(' ', '_')}{day_str}_{month_name}_{year}.pdf"
+    # prefer filename_range when created from any range (ISO or month range)
+    if (start_date_str and end_date_str) or (start_month and end_month):
+        filename = f"Audit_{category_name.replace(' ', '_')}_{filename_range}.pdf"
+    else:
+        filename = f"Audit_{category_name.replace(' ', '_')}{day_str}_{month_name}_{y}.pdf"
     return _make_pdf_response(pdf_buffer, filename)
+
+
+def _filter_items_by_range(category_name, subcategory_name, start_date, end_date):
+    """Filter items by a date range (inclusive) using date_created or date_updated."""
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id FROM categories WHERE name = %s", (category_name,))
+    cat = cur.fetchone()
+    if not cat:
+        return None
+
+    query = """
+        SELECT i.*, c.name AS category_name, s.name AS subcategory_name
+        FROM inventory_items i
+        JOIN categories c ON i.category_id = c.id
+        JOIN subcategories s ON i.subcategory_id = s.id
+        WHERE i.category_id = %s
+    """
+    params = [cat["id"]]
+
+    if subcategory_name:
+        query += " AND s.name = %s"
+        params.append(subcategory_name)
+
+    query += """
+        AND (
+            (i.date_created BETWEEN %s AND %s)
+            OR (i.date_updated BETWEEN %s AND %s)
+        )
+    """
+    params.extend([start_date, end_date, start_date, end_date])
+
+    cur.execute(query, tuple(params))
+    return cur.fetchall()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

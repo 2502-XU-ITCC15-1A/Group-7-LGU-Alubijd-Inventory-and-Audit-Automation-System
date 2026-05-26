@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <title>ALIAS - Alubijid Local Inventory and Audit System</title>
 
     <!-- Google Fonts -->
@@ -19,6 +20,130 @@
 
     <!-- main.css -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        .notification-wrapper {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            z-index: 1100;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .notification-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--primary-navy);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(49, 68, 155, 0.08);
+            transition: transform 0.16s ease, background-color 0.16s ease;
+        }
+
+        .notification-btn:hover {
+            transform: translateY(-1px);
+            background-color: #f7f9ff;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.18);
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.75rem);
+            width: 340px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 22px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-12px);
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .notification-dropdown.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .notification-dropdown-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--primary-navy);
+            background: #f9fbff;
+        }
+
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item-title {
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin-bottom: 0.4rem;
+            font-size: 0.94rem;
+        }
+
+        .notification-item-message {
+            font-size: 0.88rem;
+            color: #4a5568;
+            margin-bottom: 0.55rem;
+            line-height: 1.45;
+        }
+
+        .notification-item-time {
+            font-size: 0.78rem;
+            color: #a0aec0;
+        }
+
+        .notification-empty {
+            padding: 1.4rem 1.25rem;
+            color: #718096;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .notification-dropdown-footer {
+            padding: 0.85rem 1rem;
+            background: #f8fbff;
+            text-align: center;
+        }
+
+        .notification-view-all {
+            color: #31449b;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.88rem;
+        }
+    </style>
 </head>
 <!-- LOGOUT CONFIRM MODAL -->
 <div id="logoutModal" class="modal hidden">
@@ -35,6 +160,29 @@
     <div class="dashboard-container">
         <!-- Sidebar Include -->
         {% include 'sidebar.html' %}
+
+        <div class="notification-wrapper">
+            <button id="notificationToggle" class="notification-btn" type="button" aria-label="View notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span id="notificationDot" class="notification-dot hidden"></span>
+            </button>
+            <div id="notificationDropdown" class="notification-dropdown" role="menu" aria-hidden="true">
+                <div class="notification-dropdown-header">Notifications</div>
+                <div id="notificationList" class="notification-list">
+                    <div class="notification-empty">Loading notifications...</div>
+                </div>
+                <div class="notification-dropdown-footer">
+                    {% if session.get('role') == 'admin' %}
+                        <a href="{{ url_for('pages.approvals') }}" class="notification-view-all">Go to Approvals</a>
+                    {% else %}
+                        <span class="notification-view-all">Admin approval requests are available to administrators.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
         <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle Sidebar">
             <span></span>

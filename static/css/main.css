@@ -500,7 +500,7 @@ input::placeholder {
     border-radius: 40px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
     width: 90%;
-    max-width: 700px;
+    max-width: 500px;
     animation: modalSlide 0.3s ease-out;
 }
 
@@ -526,13 +526,51 @@ input::placeholder {
     color: var(--primary-navy);
     outline: none;
     width: 100%;
+    min-width: 0;
     margin-bottom: 1rem;
     pointer-events: auto;
+    flex-shrink: 1;
 }
 
-.modal-input:focus {
+.modal-form > div {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.modal-input {
+    min-width: 0;
+}
+
+.modal-input,
+.modal-input option,
+#createCategory,
+#createSubcategory {
+    color: var(--primary-navy) !important;
+    -webkit-text-fill-color: var(--primary-navy) !important;
+    text-shadow: none !important;
+}
+
+.modal-input,
+#createCategory,
+#createSubcategory {
+    background: #f1f3f9 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    appearance: auto !important;
+    -webkit-appearance: menulist-button !important;
+}
+
+#createCategory option,
+#createSubcategory option {
+    color: var(--primary-navy) !important;
+}
+
+.modal-input:focus,
+#createCategory:focus,
+#createSubcategory:focus {
     border-color: var(--primary-navy);
-    background: white;
+    background: #f1f3f9 !important;
 }
 
 /* ── Inventory Table Actions ────────────────────── */

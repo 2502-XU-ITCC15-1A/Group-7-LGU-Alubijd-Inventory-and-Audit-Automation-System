@@ -1,5 +1,6 @@
 from functools import wraps
 from flask import Blueprint, session, request, redirect, url_for, flash, render_template
+from MySQLdb import OperationalError
 from extensions import mysql
 from services.user_service import get_user_by_login, hash_password, verify_password
 
@@ -52,7 +53,15 @@ def login():
             flash("Invalid credentials.")
             return redirect(url_for("auth.login"))
 
-        user = get_user_by_login(mysql, identifier)
+        try:
+            user = get_user_by_login(mysql, identifier)
+        except OperationalError:
+            flash("Database connection failed. Please verify MYSQL_USER and MYSQL_PASSWORD.")
+            return redirect(url_for("auth.login"))
+        except Exception as e:
+            print(f"CRITICAL LOGIN ERROR: {e}")
+            flash("An unexpected error occurred. Please try again later.")
+            return redirect(url_for("auth.login"))
 
         if user and verify_password(user["password"], password):
             # ── Opportunistic re-hash of legacy plaintext passwords ──────────

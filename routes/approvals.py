@@ -141,6 +141,7 @@ def api_approve_request(req_id):
 
     action = req["action_type"]
     admin_id = session["user_id"]
+    requester_id = req["requested_by"]  # Use original requester, not admin
 
     try:
         if action == "CREATE":
@@ -160,8 +161,14 @@ def api_approve_request(req_id):
                 qty,
                 p.get("stock_number"),
             )
-            log_action(mysql, new_id, admin_id, "CREATE",
-                       new_value=f"[Approved request #{req_id}] {json.dumps(p)}")
+            log_action(
+                mysql,
+                new_id,
+                requester_id,
+                "CREATE",
+                new_value=f"[Approved request #{req_id}] {json.dumps(p)}",
+                change_reason=f"Approved request #{req_id}: Created {p.get('name')} with quantity {qty}",
+            )
             mysql.connection.commit()
 
         elif action == "UPDATE":
@@ -172,13 +179,36 @@ def api_approve_request(req_id):
                 except (TypeError, ValueError):
                     pass
             update_item(mysql, req["item_id"], payload)
-            log_action(mysql, req["item_id"], admin_id, "UPDATE",
-                       new_value=f"[Approved request #{req_id}] {json.dumps(payload)}")
+            item_name = req.get("item_name") or f"item #{req['item_id']}"
+            change_reason = None
+            if "quantity" in payload and payload["quantity"] is not None:
+                try:
+                    new_qty = int(payload["quantity"])
+                    change_reason = f"Approved request #{req_id}: Updated {item_name} to {new_qty} stock"
+                except (TypeError, ValueError):
+                    change_reason = f"Approved request #{req_id}: Updated {item_name}"
+            else:
+                change_reason = f"Approved request #{req_id}: Updated {item_name}"
+            log_action(
+                mysql,
+                req["item_id"],
+                requester_id,
+                "UPDATE",
+                new_value=f"[Approved request #{req_id}] {json.dumps(payload)}",
+                change_reason=change_reason,
+            )
             mysql.connection.commit()
 
         elif action == "DELETE":
-            log_action(mysql, req["item_id"], admin_id, "DELETE",
-                       new_value=f"[Approved request #{req_id}]")
+            item_name = req.get("item_name") or f"item #{req['item_id']}"
+            log_action(
+                mysql,
+                req["item_id"],
+                requester_id,
+                "DELETE",
+                new_value=f"[Approved request #{req_id}]",
+                change_reason=f"Approved request #{req_id}: Deleted {item_name}",
+            )
             delete_item(mysql, req["item_id"])
             mysql.connection.commit()
 

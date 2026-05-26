@@ -18,6 +18,8 @@
     let expandedItemId = null;
     let editingItemId = null;
     let deleteTargetId = null;
+    let selectedCreateCategory = '';
+    let selectedCreateSubcategory = '';
 
     // ── DOM refs ─────────────────────────────────
     const categorySelect = document.getElementById('categorySelect');
@@ -31,7 +33,7 @@
     const createNext = document.getElementById('createNext');
     const createCategory = document.getElementById('createCategory');
     const createSubcat = document.getElementById('createSubcategory');
-    const createStockNumber = document.getElementById('createQuantity');
+    const createQuantity = document.getElementById('createQuantity');
     const createName = document.getElementById('createName');
     const deleteModal = document.getElementById('deleteModal');
     const deleteCancelBtn = document.getElementById('deleteCancelBtn');
@@ -155,7 +157,7 @@
         <td class="td-date">${escHtml(item.date_updated)}</td>
         <td>
           <div class="row-actions">
-            <span class="td-qty ${item.quantity < 10 ? 'qty-red' : (item.quantity < 30 ? 'qty-yellow' : 'qty-green')}">${escHtml(item.stock_number || 0)}</span>
+            <span class="td-qty ${item.quantity < 10 ? 'qty-red' : (item.quantity < 30 ? 'qty-yellow' : 'qty-green')}">${escHtml(item.quantity || 0)}</span>
             <button class="btn-expand" title="Details">${chevron}</button>
             <div style="position:relative">
               <button class="btn-kebab" title="Options">&#8942;</button>
@@ -181,7 +183,6 @@
 
       const fields = [
         { label: 'ARTICLE', key: 'article' },
-        { label: 'STOCK NUMBER', key: 'stock_number' },
         { label: 'QUANTITY', key: 'quantity' },
         { label: 'UNIT OF MEASURE', key: 'unit_of_measure' },
         { label: 'UNIT VALUE', key: 'unit_value' },
@@ -198,7 +199,7 @@
             <div class="detail-field">
               <span class="df-label">${f.label}</span>
               <span class="df-line"></span>
-              <input class="df-input" data-key="${f.key}" value="${escHtml(String(val))}" ${f.key === 'quantity' ? 'readonly style="background: #f0f0f0; opacity: 0.7;"' : ''} />
+              <input class="df-input" data-key="${f.key}" value="${escHtml(String(val))}" />
             </div>`;
         }
         return `
@@ -235,15 +236,6 @@
       `;
 
       if (isEditing) {
-        const stockInp = tr.querySelector('.df-input[data-key="stock_number"]');
-        const qtyInp = tr.querySelector('.df-input[data-key="quantity"]');
-        if (stockInp && qtyInp) {
-          stockInp.addEventListener('input', () => {
-            const val = parseInt(stockInp.value) || 0;
-            qtyInp.value = val;
-          });
-        }
-
         tr.querySelector(`#saveBtn-${item.id}`).addEventListener('click', () => saveEdit(item.id, tr));
         tr.querySelector(`#cancelEditBtn-${item.id}`).addEventListener('click', () => {
           editingItemId = null;
@@ -394,7 +386,10 @@
 
     let pendingCreateData = null;
 
-    btnCreateNew.addEventListener('click', () => {
+    btnCreateNew.addEventListener('click', async () => {
+      await loadCategories();
+      await loadSubcategories();
+      resetCreateModalState();
       populateCreateDropdowns();
       createModal.classList.remove('hidden');
     });
@@ -403,47 +398,88 @@
       createModal.classList.add('hidden');
     });
 
-    function populateCreateDropdowns() {
-      createCategory.innerHTML = '<option value="">Category</option>';
-      categories.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.name;
-        createCategory.appendChild(opt);
-      });
-      createSubcat.innerHTML = '<option value="">Subcategory</option>';
+    function makeOption(value, label) {
+      const opt = document.createElement('option');
+      opt.value = String(value);
+      opt.textContent = label;
+      return opt;
     }
 
-    createCategory.addEventListener('change', () => {
-      const catId = createCategory.value;
-      createSubcat.innerHTML = '<option value="">Subcategory</option>';
-      subcategories
-        .filter(s => s.category_id == catId)
-        .forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s.id;
-          opt.textContent = s.name;
-          createSubcat.appendChild(opt);
-        });
+    function applyCreateSelectStyles(select) {
+      select.style.color = '#1e293b';
+      select.style.backgroundColor = '#f1f3f9';
+      select.style.width = '100%';
+      select.style.minWidth = '0';
+    }
+
+    function resetCreateModalState() {
+      selectedCreateCategory = '';
+      selectedCreateSubcategory = '';
+      createQuantity.value = '';
+      createName.value = '';
+    }
+
+    function populateCreateDropdowns() {
+      createCategory.innerHTML = '';
+      createCategory.appendChild(makeOption('', 'Category'));
+      categories.forEach(c => {
+        const opt = makeOption(c.id, c.name);
+        createCategory.appendChild(opt);
+      });
+      createCategory.value = selectedCreateCategory || '';
+      applyCreateSelectStyles(createCategory);
+
+      populateCreateSubcategories(selectedCreateCategory);
+    }
+
+    function populateCreateSubcategories(categoryId) {
+      createSubcat.innerHTML = '';
+      createSubcat.appendChild(makeOption('', 'Subcategory'));
+      if (!categoryId) {
+        createSubcat.disabled = true;
+        createSubcat.value = '';
+        applyCreateSelectStyles(createSubcat);
+        return;
+      }
+
+      const matches = subcategories.filter(s => String(s.category_id) === String(categoryId));
+      matches.forEach(s => {
+        const opt = makeOption(s.id, s.name);
+        createSubcat.appendChild(opt);
+      });
+      createSubcat.disabled = matches.length === 0;
+      createSubcat.value = selectedCreateSubcategory || '';
+      applyCreateSelectStyles(createSubcat);
+    }
+
+    createCategory.addEventListener('change', (event) => {
+      selectedCreateCategory = event.target.value || '';
+      createCategory.value = selectedCreateCategory;
+      selectedCreateSubcategory = '';
+      populateCreateSubcategories(selectedCreateCategory);
+    });
+
+    createSubcat.addEventListener('change', (event) => {
+      selectedCreateSubcategory = event.target.value || '';
+      createSubcat.value = selectedCreateSubcategory;
     });
 
     // STEP 1: CLICK CREATE → SHOW CONFIRM
     createNext.addEventListener('click', () => {
-      const catId = createCategory.value;
-      const subId = createSubcat.value;
-      const stockNo = createStockNumber.value.trim();
+      const catId = selectedCreateCategory || createCategory.value;
+      const subId = selectedCreateSubcategory || createSubcat.value;
+      const quantity = createQuantity.value.trim();
       const name = createName.value.trim();
 
-
-      if (!catId || !subId || !name || !stockNo) {
-        showToast('Please fill in Category, Subcategory, Name, and Stock No.', 'error');
+      if (!catId || !subId || !name || !quantity) {
+        showToast('Please fill in Category, Subcategory, Name, and Quantity.', 'error');
         return;
       }
 
       pendingCreateData = {
         category_id: catId,
         subcategory_id: subId,
-        stock_number: stockNo,
+        quantity: Number(quantity) || 0,
         name
       };
 
@@ -467,7 +503,8 @@
 
         createCategory.value = '';
         createSubcat.innerHTML = '<option value="">Subcategory</option>';
-        createStockNumber.value = '';
+        createSubcat.disabled = true;
+        createQuantity.value = '';
         createName.value = '';
 
         // ── Pending approval ───────────────────

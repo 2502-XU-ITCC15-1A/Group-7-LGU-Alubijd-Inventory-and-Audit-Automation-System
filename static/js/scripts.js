@@ -124,6 +124,66 @@
             refreshPendingCount();
             setInterval(refreshPendingCount, 60000);
         }
+
+        const notificationToggle = document.getElementById('notificationToggle');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationList = document.getElementById('notificationList');
+        const notificationDot = document.getElementById('notificationDot');
+
+        async function loadNotifications() {
+            if (!notificationDropdown || !notificationList || !notificationToggle) return;
+            try {
+                const res = await fetch('/api/notifications');
+                if (!res.ok) throw new Error('Request failed');
+
+                const data = await res.json();
+                const notifications = data.notifications || [];
+                const count = data.count || 0;
+
+                notificationList.innerHTML = '';
+
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<div class="notification-empty">You have no new notifications.</div>';
+                    notificationDot.classList.add('hidden');
+                } else {
+                    notifications.forEach(item => {
+                        const row = document.createElement('div');
+                        row.className = 'notification-item';
+                        row.innerHTML = `
+                            <div class="notification-item-title">${item.title}</div>
+                            <div class="notification-item-message">${item.message}</div>
+                            <div class="notification-item-time">${item.timestamp || ''}</div>
+                        `;
+                        notificationList.appendChild(row);
+                    });
+                    notificationDot.classList.remove('hidden');
+                    notificationDot.setAttribute('aria-hidden', 'false');
+                    notificationToggle.setAttribute('aria-label', `View ${count} notifications`);
+                }
+            } catch (error) {
+                notificationList.innerHTML = '<div class="notification-empty">Unable to load notifications.</div>';
+            }
+        }
+
+        if (notificationToggle) {
+            notificationToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (!notificationDropdown) return;
+                notificationDropdown.classList.toggle('show');
+                notificationDropdown.setAttribute('aria-hidden', notificationDropdown.classList.contains('show') ? 'false' : 'true');
+                if (notificationDropdown.classList.contains('show')) {
+                    loadNotifications();
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!notificationDropdown || !notificationToggle) return;
+                if (!notificationDropdown.contains(event.target) && !notificationToggle.contains(event.target)) {
+                    notificationDropdown.classList.remove('show');
+                    notificationDropdown.setAttribute('aria-hidden', 'true');
+                }
+            });
+        }
     });
 
 })();

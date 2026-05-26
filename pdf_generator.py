@@ -87,6 +87,7 @@ def generate_physical_count_pdf(category_name, as_of_date, accountable_person,
             P(item.get('remarks', ''),      td_l_s),
         ])
 
+    BLUE  = colors.HexColor('#31449b')
     LGRAY = colors.HexColor('#f5f6fc')
 
     col_w = [28*mm, 62*mm, 26*mm, 18*mm, 22*mm, 24*mm, 24*mm, 20*mm, 22*mm, 30*mm]
@@ -96,12 +97,12 @@ def generate_physical_count_pdf(category_name, as_of_date, accountable_person,
         ('SPAN',          (0,0),(0,1)),  ('SPAN',(1,0),(1,1)), ('SPAN',(2,0),(2,1)),
         ('SPAN',          (3,0),(3,1)),  ('SPAN',(4,0),(4,1)), ('SPAN',(5,0),(5,1)),
         ('SPAN',          (6,0),(6,1)),  ('SPAN',(7,0),(8,0)), ('SPAN',(9,0),(9,1)),
-        ('BACKGROUND',    (0,0),(-1,1),  colors.white),
-        ('TEXTCOLOR',     (0,0),(-1,1),  colors.black),
+        ('BACKGROUND',    (0,0),(-1,1),  BLUE),
+        ('TEXTCOLOR',     (0,0),(-1,1),  colors.white),
         ('ROWBACKGROUNDS',(0,2),(-1,-1), [colors.white, LGRAY]),
         ('GRID',          (0,0),(-1,-1), 0.4, colors.HexColor('#c0c8e8')),
-        ('BOX',           (0,0),(-1,-1), 0.8, colors.black),
-        ('LINEBELOW',     (0,1),(-1,1),  0.8, colors.black),
+        ('BOX',           (0,0),(-1,-1), 0.8, BLUE),
+        ('LINEBELOW',     (0,1),(-1,1),  0.8, BLUE),
         ('VALIGN',        (0,0),(-1,-1), 'MIDDLE'),
         ('ALIGN',         (0,0),(-1,1),  'CENTER'),
         ('TOPPADDING',    (0,0),(-1,-1), 4),

@@ -3,7 +3,7 @@ import time
 import threading
 from collections import defaultdict
 
-from flask import Flask, request, jsonify, g
+from flask import Flask, request, jsonify, g, send_from_directory
 from config import Config
 from extensions import mysql
 from routes.auth import auth_bp
@@ -90,6 +90,14 @@ def create_app():
     app.register_blueprint(users_bp)
     app.register_blueprint(pdf_bp)
     app.register_blueprint(approvals_bp)
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(
+            os.path.join(app.root_path, 'static', 'images'),
+            'logo.png',
+            mimetype='image/png'
+        )
 
     return app
 

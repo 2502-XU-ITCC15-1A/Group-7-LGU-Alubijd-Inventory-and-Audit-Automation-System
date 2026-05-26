@@ -14,16 +14,15 @@
 </div>
 
 <div class="dashboard-content" style="padding: 0 2rem 2rem; text-align: center;">
-
-    <!-- Supply Trend Analysis (Dynamic Charts) -->
+    <!-- Supply Trend Analysis -->
     <div style="margin-bottom: 3rem;">
         <h2 style="color: var(--primary-navy); font-weight: 900; font-size: 2.2rem; margin-bottom: 0.2rem;">SUPPLY TREND ANALYSIS</h2>
         <p style="color: var(--primary-navy); font-style: italic; font-weight: 600; margin-bottom: 2rem;">Inflow and Outflow Across All Categories</p>
 
-        <!-- JavaScript will inject the charts here -->
         <div id="dynamicChartsGrid" class="charts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
         </div>
     </div>
+</div>
 
     <!-- Inventory Update History -->
     <div style="margin-top: 3rem;">
@@ -37,7 +36,7 @@
                         <th>NAME</th>
                         <th>DATE CREATED</th>
                         <th>DATE UPDATED</th>
-                        <th>STOCK NO.</th>
+                        <th>QUANTITY</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,7 +48,7 @@
                         <td>{{ item.date_created.strftime('%m/%d/%Y') if item.date_created else '' }}</td>
                         <td>{{ item.date_updated.strftime('%m/%d/%Y') if item.date_updated else '' }}</td>
                         {% set q_color = '#e74c3c' if item.quantity <= 5 else ('#f1c40f' if item.quantity <= 20 else 'var(--success)') %}
-                        <td style="color: {{ q_color }};">{{ item.stock_number or 0 }}</td>
+                        <td style="color: {{ q_color }};">{{ item.quantity }}</td>
                     </tr>
                     {% else %}
                     <tr>
@@ -109,7 +108,7 @@
             const datasets = data.datasets;
 
             // Loop through every category returned from the database
-                for (const [key, categoryInfo] of Object.entries(datasets)) {
+            for (const [key, categoryInfo] of Object.entries(datasets)) {
                 const chartId = `chart-${key}`;
 
                 // Create the HTML structure for the chart

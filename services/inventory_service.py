@@ -123,24 +123,51 @@ def create_subcategory(db, category_id, name):
 
 
 def delete_category(db, cat_id):
-    """Delete a category. Raises ValueError if subcategories or items exist under it."""
+    """
+    Delete category and automatically delete:
+    - all subcategories
+    - all inventory items under those subcategories
+    """
+
     cur = db.connection.cursor()
-    cur.execute("SELECT COUNT(*) AS cnt FROM subcategories WHERE category_id = %s", (cat_id,))
-    if cur.fetchone()["cnt"] > 0:
-        raise ValueError("Cannot delete: subcategories exist under this category. Delete them first.")
-    cur.execute("SELECT COUNT(*) AS cnt FROM inventory_items WHERE category_id = %s", (cat_id,))
-    if cur.fetchone()["cnt"] > 0:
-        raise ValueError("Cannot delete: inventory items exist under this category.")
-    cur.execute("DELETE FROM categories WHERE id = %s", (cat_id,))
+
+    # ── Delete inventory items under category ──
+    cur.execute("""
+        DELETE FROM inventory_items
+        WHERE category_id = %s
+    """, (cat_id,))
+
+    # ── Delete subcategories under category ──
+    cur.execute("""
+        DELETE FROM subcategories
+        WHERE category_id = %s
+    """, (cat_id,))
+
+    # ── Delete category ──
+    cur.execute("""
+        DELETE FROM categories
+        WHERE id = %s
+    """, (cat_id,))
 
 
 def delete_subcategory(db, sub_id):
-    """Delete a subcategory. Raises ValueError if items exist under it."""
+    """
+    Delete subcategory and all inventory items under it.
+    """
+
     cur = db.connection.cursor()
-    cur.execute("SELECT COUNT(*) AS cnt FROM inventory_items WHERE subcategory_id = %s", (sub_id,))
-    if cur.fetchone()["cnt"] > 0:
-        raise ValueError("Cannot delete: inventory items exist under this subcategory.")
-    cur.execute("DELETE FROM subcategories WHERE id = %s", (sub_id,))
+
+    # ── Delete inventory items ──
+    cur.execute("""
+        DELETE FROM inventory_items
+        WHERE subcategory_id = %s
+    """, (sub_id,))
+
+    # ── Delete subcategory ──
+    cur.execute("""
+        DELETE FROM subcategories
+        WHERE id = %s
+    """, (sub_id,))
 
 
 def create_item(db, category_id, subcategory_id, name, quantity, stock_number=None):
