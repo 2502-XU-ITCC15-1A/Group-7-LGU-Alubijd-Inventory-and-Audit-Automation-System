@@ -14,6 +14,8 @@ class Config:
     MYSQL_DB = os.getenv("MYSQL_DB", "alias_db")
     MYSQL_CURSORCLASS = 'DictCursor'
 
+    MYSQL_PORT = int(os.getenv("MYSQL_PORT", 10064))
+    
     UPLOAD_FOLDER = os.path.join("static", "uploads")
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB upload cap
 
