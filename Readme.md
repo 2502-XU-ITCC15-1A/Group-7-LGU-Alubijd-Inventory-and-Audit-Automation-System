@@ -51,6 +51,7 @@ MYSQL_HOST=localhost
 MYSQL_USER=your_user
 MYSQL_PASSWORD=your_password
 MYSQL_DB=alias_db
+MYSQL_PORT=
 SECRET_KEY=your_secure_random_key
 ```
 
